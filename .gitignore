@@ -1,7 +1,10 @@
 
 ###> symfony/framework-bundle ###
+/.env
 /.env.local
 /.env.local.php
+/.env.dev
+/.env.test
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
@@ -13,3 +16,28 @@
 /phpunit.xml
 /.phpunit.cache/
 ###< phpunit/phpunit ###
+
+# Local development / Docker
+/.docker/
+/docker-data/
+/mysql-data/
+
+# Original purchased/downloaded theme source, not needed in production repo
+/tema/
+
+# User uploaded documents and temporary scans
+/public/uploads/
+/public/media/
+/public/storage/
+/public/tmp/
+
+# Node/build artifacts if added later
+/node_modules/
+/npm-debug.log
+/yarn-error.log
+
+# IDE and OS noise
+/.idea/
+/.vscode/
+/.DS_Store
+Thumbs.db
