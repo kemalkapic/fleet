@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Uredi korisnika | {{ app_name }}{% endblock %}
+{% block page_title %}Uredi korisnika{% endblock %}
+
+{% block body %}
+    {% include 'platform/user/_form.html.twig' with {
+        title: user.fullName ?: user.email,
+        description: 'Ažurirajte korisničke podatke, role i firmu.',
+        button_label: 'Sačuvaj promjene'
+    } %}
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Novo vozilo | {{ app_name }}{% endblock %}
+{% block page_title %}Novo vozilo{% endblock %}
+
+{% block body %}
+    {% include 'vehicle/_form.html.twig' with {
+        title: 'Novo vozilo',
+        description: 'Unesite osnovne podatke o vozilu.',
+        button_label: 'Sačuvaj vozilo',
+        scan_enabled: module_enabled('vehicle_registration_scan'),
+        scan_title: 'Slikaj saobraćajnu',
+        scan_description: 'Slikajte ili odaberite sliku saobraćajne dozvole, pa ćemo popuniti polja ispod.',
+        scan_button_label: 'Slikaj saobraćajnu',
+        scan_url: path('vehicle_scan_registration_extract')
+    } %}
+{% endblock %}

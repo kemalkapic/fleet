@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Novi dokument | {{ app_name }}{% endblock %}
+{% block page_title %}Novi dokument{% endblock %}
+
+{% block body %}
+    <a href="{{ path('document_index') }}" class="mb-4 inline-flex text-sm text-muted">Nazad na dokumente</a>
+
+    {% include 'document/_form_theme.html.twig' with {
+        title: 'Novi dokument',
+        description: 'Unesite rok važenja i odaberite vozilo ili vozača na kojeg se dokument odnosi.',
+        button_label: 'Sačuvaj dokument'
+    } %}
+{% endblock %}

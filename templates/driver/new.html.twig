@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Novi vozač | {{ app_name }}{% endblock %}
+{% block page_title %}Novi vozač{% endblock %}
+
+{% block body %}
+    {% include 'driver/_form.html.twig' with {
+        title: 'Novi vozač',
+        description: 'Unesite osnovne podatke o vozaču.',
+        button_label: 'Sačuvaj vozača',
+        scan_enabled: module_enabled('driving_licence_scan'),
+        scan_title: 'Slikaj vozačku',
+        scan_description: 'Slikajte ili odaberite sliku vozačke dozvole, pa ćemo popuniti polja ispod.',
+        scan_button_label: 'Slikaj vozačku',
+        scan_url: path('driver_scan_licence_extract')
+    } %}
+{% endblock %}

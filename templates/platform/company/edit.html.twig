@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Uredi firmu | {{ app_name }}{% endblock %}
+{% block page_title %}Uredi firmu{% endblock %}
+
+{% block body %}
+    {% include 'platform/company/_form.html.twig' with {
+        title: company.name,
+        description: 'Ažurirajte osnovne podatke tenant računa.',
+        button_label: 'Sačuvaj promjene'
+    } %}
+{% endblock %}

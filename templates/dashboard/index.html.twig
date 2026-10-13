@@ -1,0 +1,111 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Kontrolna tabla | {{ app_name }}{% endblock %}
+{% block page_title %}Kontrolna tabla{% endblock %}
+
+{% block body %}
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <p class="text-muted">Firme</p>
+            <div class="flex items-end justify-between mt-4">
+                <h2 class="text-3xl font-semibold text-black dark:text-white">0</h2>
+                <span class="flex items-center justify-center rounded size-10 text-purple bg-purple/10">
+                    <i class="ri-building-4-line text-xl"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <p class="text-muted">Vozila</p>
+            <div class="flex items-end justify-between mt-4">
+                <h2 class="text-3xl font-semibold text-black dark:text-white">0</h2>
+                <span class="flex items-center justify-center rounded size-10 text-info bg-info/10">
+                    <i class="ri-truck-line text-xl"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <p class="text-muted">Vozači</p>
+            <div class="flex items-end justify-between mt-4">
+                <h2 class="text-3xl font-semibold text-black dark:text-white">0</h2>
+                <span class="flex items-center justify-center rounded size-10 text-success bg-success/10">
+                    <i class="ri-user-3-line text-xl"></i>
+                </span>
+            </div>
+        </div>
+
+        <div class="p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <p class="text-muted">Dokumenti pred istekom</p>
+            <div class="flex items-end justify-between mt-4">
+                <h2 class="text-3xl font-semibold text-black dark:text-white">0</h2>
+                <span class="flex items-center justify-center rounded size-10 text-danger bg-danger/10">
+                    <i class="ri-file-warning-line text-xl"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 mt-4 xl:grid-cols-3">
+        <section class="p-5 bg-white border rounded xl:col-span-2 dark:bg-darklight dark:border-darkborder border-black/10">
+            <div class="flex items-center justify-between gap-4 mb-5">
+                <div>
+                    <h2 class="text-base font-semibold text-black dark:text-white">Prva faza</h2>
+                    <p class="text-muted">Temelj prije poslovnih modula.</p>
+                </div>
+                <span class="px-3 py-1 text-xs font-medium rounded bg-purple/10 text-purple">U pripremi</span>
+            </div>
+
+            <div class="overflow-auto">
+                <table class="w-full min-w-[640px]">
+                    <thead>
+                        <tr class="ltr:text-left rtl:text-right">
+                            <th>Faza</th>
+                            <th>Status</th>
+                            <th>Opseg</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="text-muted">
+                            <td>Docker runtime</td>
+                            <td><span class="px-2 py-1 text-xs rounded bg-success/10 text-success">Spremno</span></td>
+                            <td>PHP 8.4, MySQL 8.4, Composer</td>
+                        </tr>
+                        <tr class="text-muted">
+                            <td>Symfony skeleton</td>
+                            <td><span class="px-2 py-1 text-xs rounded bg-info/10 text-info">Pripremljeno</span></td>
+                            <td>Kernel, routes, Twig, Doctrine config</td>
+                        </tr>
+                        <tr class="text-muted">
+                            <td>Security</td>
+                            <td><span class="px-2 py-1 text-xs rounded bg-warning/10 text-warning">U tijeku</span></td>
+                            <td>Korisnici, role, prijava, tenant context</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <aside class="p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <h2 class="text-base font-semibold text-black dark:text-white">Runtime</h2>
+            <div class="mt-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-muted">PHP</span>
+                    <span class="font-medium text-black dark:text-white">8.4</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-muted">Symfony</span>
+                    <span class="font-medium text-black dark:text-white">7.4 LTS</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-muted">Baza</span>
+                    <span class="font-medium text-black dark:text-white">MySQL 8.4</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-muted">UI</span>
+                    <span class="font-medium text-black dark:text-white">Twig tema</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+{% endblock %}

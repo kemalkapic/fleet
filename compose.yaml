@@ -1,0 +1,45 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - composer-cache:/tmp/composer-cache
+    environment:
+      APP_ENV: dev
+      DATABASE_URL: mysql://fleet:fleet@mysql:3306/fleet?serverVersion=8.4.0&charset=utf8mb4
+      COMPOSER_CACHE_DIR: /tmp/composer-cache
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: >
+      sh -lc "if [ -f vendor/autoload_runtime.php ]; then
+      PHP_CLI_SERVER_WORKERS=4 php -d variables_order=EGPCS -S 0.0.0.0:8000 -t public;
+      else
+      echo 'Symfony dependencies are not installed yet. Run composer install inside this container.';
+      tail -f /dev/null;
+      fi"
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: fleet
+      MYSQL_USER: fleet
+      MYSQL_PASSWORD: fleet
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  composer-cache:
+  mysql-data:

@@ -1,0 +1,182 @@
+{% set field_label_class = 'block mb-1 text-xs font-medium text-black dark:text-white' %}
+{% set field_input_class = 'w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder' %}
+
+<style>
+    .document-form-layout {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .document-form-fields {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .document-form-side {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .document-upload-box {
+        border: 1px solid rgba(106, 90, 249, 0.18);
+        border-radius: 8px;
+        padding: 0.875rem;
+        background: rgba(106, 90, 249, 0.06);
+    }
+
+    .document-file-input input[type="file"] {
+        width: 100%;
+        font-size: 0.875rem;
+    }
+
+    .document-file-input input[type="file"]::file-selector-button {
+        margin-right: 0.75rem;
+        border: 0;
+        border-radius: 6px;
+        background: #6a5af9;
+        color: #fff;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    @media (min-width: 768px) {
+        .document-form-fields {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .document-form-layout {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .document-form-fields {
+            grid-column: span 2 / span 2;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+</style>
+
+<div class="w-full">
+    <section class="p-3 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10 sm:p-4">
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold text-black dark:text-white">{{ title }}</h2>
+            <p class="mt-1 text-sm text-muted">{{ description }}</p>
+        </div>
+
+        {% for message in app.flashes('error') %}
+            <div class="mb-4 rounded bg-danger/10 p-3 text-sm text-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {{ form_start(form, {attr: {class: 'space-y-3'}}) }}
+            <div class="document-form-layout">
+                <div class="document-form-fields">
+                    <div>
+                        {{ form_label(form.ownerType, null, {label_attr: {class: field_label_class}}) }}
+                        {{ form_widget(form.ownerType, {attr: {class: field_input_class, 'data-document-owner-type': '1'}}) }}
+                        {{ form_errors(form.ownerType) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.type, null, {label_attr: {class: field_label_class}}) }}
+                        {{ form_widget(form.type, {attr: {class: field_input_class}}) }}
+                        {{ form_errors(form.type) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.documentNumber, null, {label_attr: {class: field_label_class}}) }}
+                        {{ form_widget(form.documentNumber, {attr: {class: field_input_class}}) }}
+                        {{ form_errors(form.documentNumber) }}
+                    </div>
+
+                    <div data-document-owner-field="vehicle">
+                        {{ form_label(form.vehicle, null, {label_attr: {class: field_label_class}}) }}
+                        {{ form_widget(form.vehicle, {attr: {class: field_input_class}}) }}
+                        {{ form_errors(form.vehicle) }}
+                    </div>
+
+                    <div data-document-owner-field="driver">
+                        {{ form_label(form.driver, null, {label_attr: {class: field_label_class}}) }}
+                        {{ form_widget(form.driver, {attr: {class: field_input_class}}) }}
+                        {{ form_errors(form.driver) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.validFrom, null, {label_attr: {class: field_label_class}}) }}
+                        {{ form_widget(form.validFrom, {attr: {class: field_input_class}}) }}
+                        {{ form_errors(form.validFrom) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.validUntil, null, {label_attr: {class: field_label_class ~ ' text-danger'}}) }}
+                        {{ form_widget(form.validUntil, {attr: {class: field_input_class}}) }}
+                        {{ form_errors(form.validUntil) }}
+                    </div>
+                </div>
+
+                <aside class="document-form-side">
+                    <div class="document-upload-box">
+                        <div class="flex items-start gap-2">
+                            <i class="ri-attachment-2 text-lg text-purple"></i>
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold text-black dark:text-white">Prilog</p>
+                                <p class="mt-1 text-xs text-muted">Opcionalno. Rok se unosi rucno, bez citanja dokumenta.</p>
+                            </div>
+                        </div>
+
+                        <div class="document-file-input mt-3">
+                            {{ form_widget(form.file) }}
+                            {{ form_errors(form.file) }}
+                        </div>
+
+                        {% if document.storageKey %}
+                            <a href="{{ path('document_download', {id: document.id}) }}" class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded bg-purple/10 px-3 py-2 text-sm font-semibold text-purple">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4v11m0 0 4-4m-4 4-4-4M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                Preuzmi prilog
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.notes, null, {label_attr: {class: field_label_class}}) }}
+                        {{ form_widget(form.notes, {attr: {class: field_input_class ~ ' min-h-32 resize-y'}}) }}
+                        {{ form_errors(form.notes) }}
+                    </div>
+
+                    <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded bg-purple px-4 py-2 text-sm text-white">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4h12l2 2v14H5V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 4v6h8M8 20v-6h8v6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                        {{ button_label }}
+                    </button>
+                </aside>
+            </div>
+        {{ form_end(form) }}
+    </section>
+</div>
+
+<script>
+    (() => {
+        const ownerType = document.querySelector('[data-document-owner-type]');
+        const vehicleField = document.querySelector('[data-document-owner-field="vehicle"]');
+        const driverField = document.querySelector('[data-document-owner-field="driver"]');
+
+        if (!ownerType || !vehicleField || !driverField) {
+            return;
+        }
+
+        const syncOwnerFields = () => {
+            const isDriver = ownerType.value === 'driver';
+            vehicleField.style.display = isDriver ? 'none' : '';
+            driverField.style.display = isDriver ? '' : 'none';
+        };
+
+        ownerType.addEventListener('change', syncOwnerFields);
+        syncOwnerFields();
+    })();
+</script>

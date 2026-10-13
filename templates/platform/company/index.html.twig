@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Firme | {{ app_name }}{% endblock %}
+{% block page_title %}Firme{% endblock %}
+
+{% block body %}
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="text-xl font-semibold text-black dark:text-white">Firme</h2>
+            <p class="mt-1 text-muted">Platformski pregled tenant računa.</p>
+        </div>
+        <a href="{{ path('platform_company_new') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2 text-white rounded bg-purple">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            Nova firma
+        </a>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="p-3 mt-4 text-sm rounded text-success bg-success/10">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <section class="p-5 mt-4 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+        <div class="overflow-auto">
+            <table class="w-full min-w-[720px]">
+                <thead>
+                    <tr class="ltr:text-left rtl:text-right">
+                        <th>Naziv</th>
+                        <th>Status</th>
+                        <th>Limiti</th>
+                        <th>Kreirano</th>
+                        <th class="text-right">Akcije</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for company in companies %}
+                        <tr class="text-muted">
+                            <td>
+                                <span class="font-medium text-black dark:text-white">{{ company.name }}</span>
+                            </td>
+                            <td>
+                                <span class="px-2 py-1 text-xs rounded bg-info/10 text-info">{{ company.status }}</span>
+                            </td>
+                            <td>
+                                <div class="flex flex-wrap gap-1 text-xs">
+                                    <span class="rounded bg-purple/10 px-2 py-1 text-purple">Vozila: {{ company.vehicleLimit is not null ? company.vehicleLimit : '∞' }}</span>
+                                    <span class="rounded bg-success/10 px-2 py-1 text-success">Vozači: {{ company.driverLimit is not null ? company.driverLimit : '∞' }}</span>
+                                    <span class="rounded bg-info/10 px-2 py-1 text-info">Dokumenti: {{ company.documentLimit is not null ? company.documentLimit : '∞' }}</span>
+                                </div>
+                            </td>
+                            <td>{{ company.createdAt|date('d.m.Y. H:i') }}</td>
+                            <td class="text-right">
+                                <a href="{{ path('platform_company_module_edit', {id: company.id}) }}" class="inline-flex items-center justify-center gap-2 px-3 py-2 mr-2 rounded text-info bg-info/10">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M6 6h12M6 12h12M6 18h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        <path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm6 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" fill="currentColor"/>
+                                    </svg>
+                                    Moduli
+                                </a>
+                                <a href="{{ path('platform_company_edit', {id: company.id}) }}" class="inline-flex items-center justify-center gap-2 px-3 py-2 rounded text-purple bg-purple/10">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                        <path d="m13.5 6.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    Uredi
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="py-8 text-center text-muted">Još nema kreiranih firmi.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

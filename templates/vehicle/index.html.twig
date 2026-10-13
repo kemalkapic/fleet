@@ -1,0 +1,243 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vozila | {{ app_name }}{% endblock %}
+{% block page_title %}Vozila{% endblock %}
+
+{% block body %}
+    {% set status_labels = {
+        active: 'Aktivan',
+        inactive: 'Neaktivan',
+        sold: 'Prodano',
+        archived: 'Arhivirano'
+    } %}
+
+    <style>
+        .vehicle-card-details {
+            display: grid;
+            gap: 0.55rem 0.75rem;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        @media (max-width: 768px) {
+            .vehicle-card-details {
+                gap: 0.4rem 0.6rem;
+            }
+
+            .vehicle-card-details dt {
+                font-size: 0.625rem;
+            }
+
+            .vehicle-card-details dd {
+                font-size: 0.78rem;
+                line-height: 1.15rem;
+            }
+
+        }
+    </style>
+
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="text-xl font-semibold text-black dark:text-white">Vozila</h2>
+            <p class="mt-1 text-muted">Vozila dostupna u vašoj firmi.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            {% if vehicle_limit_reached %}
+                <span class="inline-flex w-full items-center justify-center rounded bg-warning/10 px-4 py-2 text-sm font-semibold text-warning sm:w-auto">
+                    Kontaktiraj admina za još vozila
+                </span>
+            {% else %}
+                <a href="{{ path('vehicle_new') }}" class="inline-flex w-full items-center justify-center gap-2 px-4 py-2 text-white rounded bg-purple sm:w-auto">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                    Novo vozilo
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="p-3 mt-4 text-sm rounded text-success bg-success/10">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="p-3 mt-4 text-sm rounded text-danger bg-danger/10">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <section class="mt-4">
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {% for vehicle in vehicles %}
+                {% set vehicle_name = vehicle.manufacturer or vehicle.model ? (vehicle.manufacturer ~ ' ' ~ vehicle.model)|trim : 'Vozilo bez modela' %}
+
+                <article class="flex flex-col rounded border border-black/10 bg-white p-4 dark:border-darkborder dark:bg-darklight">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="truncate text-base font-semibold text-black dark:text-white sm:text-lg">{{ vehicle.registrationNumber }}</p>
+                            <p class="mt-0.5 truncate text-xs text-muted sm:mt-1 sm:text-sm">{{ vehicle_name }}</p>
+                        </div>
+                        <span class="flex-none rounded bg-info/10 px-2 py-1 text-xs font-semibold text-info">{{ status_labels[vehicle.status]|default(vehicle.status) }}</span>
+                    </div>
+
+                    <dl class="vehicle-card-details mt-3 text-sm">
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">VIN</dt>
+                            <dd class="mt-1 break-all font-medium text-black dark:text-white">{{ vehicle.vin ?: '-' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">Tip</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ vehicle.vehicleType ?: '-' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">Godina</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ vehicle.productionYear ?: '-' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">Registracija važi do</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ vehicle.registrationValidUntil ? vehicle.registrationValidUntil|date('d.m.Y') : '-' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">Gorivo</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ vehicle.fuelType ?: '-' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">EURO</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ vehicle.euroStandard ?: '-' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">Obujam</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ vehicle.engineDisplacement is not null ? vehicle.engineDisplacement|number_format(0, ',', '.') ~ ' cm3' : '-' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">Snaga</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ vehicle.enginePowerKw is not null ? vehicle.enginePowerKw ~ ' kW' : '-' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">Kilometraža</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ vehicle.currentMileage is not null ? vehicle.currentMileage|number_format(0, ',', '.') ~ ' km' : '-' }}</dd>
+                        </div>
+
+                    </dl>
+
+                    <div class="mt-3 flex items-end gap-2">
+                        <a href="{{ path('vehicle_edit', {id: vehicle.id}) }}" class="inline-flex flex-1 items-center justify-center gap-2 rounded bg-purple/10 px-3 py-2 text-sm font-semibold text-purple">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                <path d="m13.5 6.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Uredi
+                        </a>
+                        <form method="post" action="{{ path('vehicle_delete', {id: vehicle.id}) }}" class="flex-1" onsubmit="return confirm('Jeste li sigurni da želite obrisati ovo vozilo?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_vehicle_' ~ vehicle.id) }}">
+                            <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M6 7h12M10 11v6M14 11v6M9 7l1-3h4l1 3M8 7l1 13h6l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Obriši
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            {% else %}
+                <div class="rounded border border-dashed border-black/10 bg-white p-6 text-center text-muted dark:border-darkborder dark:bg-darklight md:col-span-2 xl:col-span-3">
+                    Još nema kreiranih vozila.
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="hidden">
+        <div class="hidden overflow-auto sm:block">
+            <table class="w-full min-w-[1040px]">
+                <thead>
+                    <tr class="ltr:text-left rtl:text-right">
+                        <th>Registracija</th>
+                        <th>Vozilo</th>
+                        <th>VIN</th>
+                        <th>Registracija važi do</th>
+                        <th>Gorivo</th>
+                        <th>Kilometraža</th>
+                        <th>Status</th>
+                        <th class="text-right">Akcije</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehicle in vehicles %}
+                        <tr class="text-muted">
+                            <td>
+                                <span class="font-medium text-black dark:text-white">{{ vehicle.registrationNumber }}</span>
+                            </td>
+                            <td>{{ vehicle.manufacturer or vehicle.model ? (vehicle.manufacturer ~ ' ' ~ vehicle.model)|trim : '-' }}</td>
+                            <td>{{ vehicle.vin ?: '-' }}</td>
+                            <td>{{ vehicle.registrationValidUntil ? vehicle.registrationValidUntil|date('d.m.Y') : '-' }}</td>
+                            <td>{{ vehicle.fuelType ?: '-' }}</td>
+                            <td>{{ vehicle.currentMileage is not null ? vehicle.currentMileage|number_format(0, ',', '.') ~ ' km' : '-' }}</td>
+                            <td><span class="px-2 py-1 text-xs rounded bg-info/10 text-info">{{ status_labels[vehicle.status]|default(vehicle.status) }}</span></td>
+                            <td class="text-right">
+                                <a href="{{ path('vehicle_edit', {id: vehicle.id}) }}" class="inline-flex items-center justify-center px-3 py-2 rounded text-purple bg-purple/10">
+                                    Uredi
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="py-8 text-center text-muted">Još nema kreiranih vozila.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="space-y-3 sm:hidden">
+            {% for vehicle in vehicles %}
+                <article class="rounded border border-black/10 bg-white p-4 dark:border-darkborder dark:bg-dark">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="truncate text-base font-semibold text-black dark:text-white">{{ vehicle.registrationNumber }}</p>
+                            <p class="mt-1 text-sm text-muted">{{ vehicle.manufacturer or vehicle.model ? (vehicle.manufacturer ~ ' ' ~ vehicle.model)|trim : 'Vozilo bez modela' }}</p>
+                        </div>
+                        <span class="flex-none rounded bg-info/10 px-2 py-1 text-xs text-info">{{ status_labels[vehicle.status]|default(vehicle.status) }}</span>
+                    </div>
+
+                    <dl class="mt-4 grid grid-cols-1 gap-3 text-sm">
+                        <div>
+                            <dt class="text-xs uppercase text-muted">VIN</dt>
+                            <dd class="mt-1 break-all text-black dark:text-white">{{ vehicle.vin ?: '-' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs uppercase text-muted">Registracija važi do</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ vehicle.registrationValidUntil ? vehicle.registrationValidUntil|date('d.m.Y') : '-' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs uppercase text-muted">Gorivo</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ vehicle.fuelType ?: '-' }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs uppercase text-muted">Kilometraža</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ vehicle.currentMileage is not null ? vehicle.currentMileage|number_format(0, ',', '.') ~ ' km' : '-' }}</dd>
+                        </div>
+                    </dl>
+
+                    <a href="{{ path('vehicle_edit', {id: vehicle.id}) }}" class="mt-4 inline-flex w-full items-center justify-center px-3 py-2 rounded text-purple bg-purple/10">
+                        Uredi
+                    </a>
+                </article>
+            {% else %}
+                <div class="rounded border border-dashed border-black/10 p-6 text-center text-muted dark:border-darkborder">
+                    Još nema kreiranih vozila.
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}

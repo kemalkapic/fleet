@@ -1,0 +1,160 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dokumenti | {{ app_name }}{% endblock %}
+{% block page_title %}Dokumenti{% endblock %}
+
+{% block body %}
+    <style>
+        .document-card-grid {
+            display: grid;
+            gap: 0.75rem;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+
+        .document-card-details {
+            display: grid;
+            gap: 0.75rem;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        @media (min-width: 768px) {
+            .document-card-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .document-card-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+    </style>
+
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="text-xl font-semibold text-black dark:text-white">Dokumenti</h2>
+            <p class="mt-1 text-muted">Rokovi važenja dokumenata za vozila i vozače.</p>
+        </div>
+        {% if document_limit_reached %}
+            <span class="inline-flex w-full items-center justify-center rounded bg-warning/10 px-4 py-2 text-sm font-semibold text-warning sm:w-auto">
+                Kontaktiraj admina za još dokumenata
+            </span>
+        {% else %}
+            <a href="{{ path('document_new') }}" class="inline-flex w-full items-center justify-center gap-2 rounded bg-purple px-4 py-2 text-white sm:w-auto">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                Novi dokument
+            </a>
+        {% endif %}
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="mt-4 rounded bg-success/10 p-3 text-sm text-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="mt-4 rounded bg-danger/10 p-3 text-sm text-danger">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    <section class="mt-4">
+        <div class="document-card-grid">
+            {% for document in documents %}
+                {% set today = date('today') %}
+                {% set expiry_diff = today.diff(document.validUntil) %}
+                {% set days_left = expiry_diff.invert ? -expiry_diff.days : expiry_diff.days %}
+                {% set is_expired = days_left < 0 %}
+                {% set is_soon = days_left >= 0 and days_left <= 30 %}
+
+                <article class="flex min-h-full flex-col rounded border border-black/10 bg-white p-4 dark:border-darkborder dark:bg-darklight">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="truncate text-lg font-semibold text-black dark:text-white">{{ document.typeLabel }}</p>
+                            <p class="mt-1 truncate text-sm text-muted">{{ document.ownerLabel }}</p>
+                        </div>
+                        {% if is_expired %}
+                            <span class="flex-none rounded bg-danger/10 px-2 py-1 text-xs font-semibold text-danger">Isteklo</span>
+                        {% elseif is_soon %}
+                            <span class="flex-none rounded bg-warning/10 px-2 py-1 text-xs font-semibold text-warning">Uskoro</span>
+                        {% else %}
+                            <span class="flex-none rounded bg-success/10 px-2 py-1 text-xs font-semibold text-success">Aktivno</span>
+                        {% endif %}
+                    </div>
+
+                    <dl class="document-card-details mt-4 text-sm">
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">Pripada</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ document.ownerType == 'driver' ? 'Vozač' : 'Vozilo' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">Broj</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ document.documentNumber ?: '-' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">Važi od</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ document.validFrom ? document.validFrom|date('d.m.Y') : '-' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">Ističe</dt>
+                            <dd class="mt-1 font-semibold text-black dark:text-white">{{ document.validUntil|date('d.m.Y') }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">Prilog</dt>
+                            <dd class="mt-1 text-black dark:text-white">{{ document.storageKey ? 'Da' : 'Ne' }}</dd>
+                        </div>
+
+                        <div>
+                            <dt class="text-[11px] font-semibold uppercase text-muted">Dana</dt>
+                            <dd class="mt-1 text-black dark:text-white">
+                                {% if is_expired %}
+                                    {{ days_left|abs }} dana prošlo
+                                {% else %}
+                                    {{ days_left }} dana
+                                {% endif %}
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <div class="mt-4 flex flex-1 flex-wrap items-end gap-2">
+                        {% if document.storageKey %}
+                            <a href="{{ path('document_download', {id: document.id}) }}" class="inline-flex flex-1 items-center justify-center gap-2 rounded bg-info/10 px-3 py-2 text-sm font-semibold text-info">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M12 4v11m0 0 4-4m-4 4-4-4M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Preuzmi
+                            </a>
+                        {% endif %}
+                        <a href="{{ path('document_edit', {id: document.id}) }}" class="inline-flex flex-1 items-center justify-center gap-2 rounded bg-purple/10 px-3 py-2 text-sm font-semibold text-purple">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                                <path d="m13.5 6.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Uredi
+                        </a>
+                        <form method="post" action="{{ path('document_delete', {id: document.id}) }}" class="flex-1" onsubmit="return confirm('Jeste li sigurni da želite obrisati ovaj dokument?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_document_' ~ document.id) }}">
+                            <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M6 7h12M10 11v6M14 11v6M9 7l1-3h4l1 3M8 7l1 13h6l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Obriši
+                            </button>
+                        </form>
+                    </div>
+                </article>
+            {% else %}
+                <div class="rounded border border-dashed border-black/10 bg-white p-6 text-center text-muted dark:border-darkborder dark:bg-darklight">
+                    Još nema unesenih dokumenata.
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,70 @@
+<div class="max-w-4xl">
+    <div class="mb-4">
+        <a href="{{ path('platform_company_index') }}" class="inline-flex items-center gap-2 text-sm text-muted hover:text-purple">
+            <i class="ri-arrow-left-line"></i>
+            Nazad na firme
+        </a>
+    </div>
+
+    <section class="p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+        <div class="mb-5">
+            <h2 class="text-xl font-semibold text-black dark:text-white">{{ title }}</h2>
+            <p class="mt-1 text-muted">{{ description }}</p>
+        </div>
+
+        {{ form_start(form, {attr: {class: 'space-y-4'}}) }}
+            <div>
+                {{ form_label(form.name, null, {label_attr: {class: 'block mb-2 text-sm font-medium text-black dark:text-white'}}) }}
+                {{ form_widget(form.name, {attr: {class: 'w-full px-4 py-2.5 bg-transparent border rounded outline-none border-black/10 dark:border-darkborder'}}) }}
+                {{ form_errors(form.name) }}
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                    {{ form_label(form.status, null, {label_attr: {class: 'block mb-2 text-sm font-medium text-black dark:text-white'}}) }}
+                    {{ form_widget(form.status, {attr: {class: 'w-full px-4 py-2.5 bg-transparent border rounded outline-none border-black/10 dark:border-darkborder'}}) }}
+                    {{ form_errors(form.status) }}
+                </div>
+            </div>
+
+            <div class="rounded border border-black/10 p-4 dark:border-darkborder">
+                <h3 class="text-sm font-semibold text-black dark:text-white">Limiti firme</h3>
+                <p class="mt-1 text-xs text-muted">Prazno polje znači da firma nema ograničenje za taj resurs.</p>
+
+                <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div>
+                        {{ form_label(form.vehicleLimit, null, {label_attr: {class: 'block mb-2 text-sm font-medium text-black dark:text-white'}}) }}
+                        {{ form_widget(form.vehicleLimit, {attr: {class: 'w-full px-4 py-2.5 bg-transparent border rounded outline-none border-black/10 dark:border-darkborder'}}) }}
+                        {% if form.vehicleLimit.vars.help %}
+                            <p class="mt-1 text-xs text-muted">{{ form.vehicleLimit.vars.help }}</p>
+                        {% endif %}
+                        {{ form_errors(form.vehicleLimit) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.driverLimit, null, {label_attr: {class: 'block mb-2 text-sm font-medium text-black dark:text-white'}}) }}
+                        {{ form_widget(form.driverLimit, {attr: {class: 'w-full px-4 py-2.5 bg-transparent border rounded outline-none border-black/10 dark:border-darkborder'}}) }}
+                        {% if form.driverLimit.vars.help %}
+                            <p class="mt-1 text-xs text-muted">{{ form.driverLimit.vars.help }}</p>
+                        {% endif %}
+                        {{ form_errors(form.driverLimit) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.documentLimit, null, {label_attr: {class: 'block mb-2 text-sm font-medium text-black dark:text-white'}}) }}
+                        {{ form_widget(form.documentLimit, {attr: {class: 'w-full px-4 py-2.5 bg-transparent border rounded outline-none border-black/10 dark:border-darkborder'}}) }}
+                        {% if form.documentLimit.vars.help %}
+                            <p class="mt-1 text-xs text-muted">{{ form.documentLimit.vars.help }}</p>
+                        {% endif %}
+                        {{ form_errors(form.documentLimit) }}
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 text-white rounded bg-purple">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4h12l2 2v14H5V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 4v6h8M8 20v-6h8v6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                {{ button_label }}
+            </button>
+        {{ form_end(form) }}
+    </section>
+</div>

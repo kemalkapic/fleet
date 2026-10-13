@@ -1,0 +1,9 @@
+.git
+var/cache
+var/log
+vendor
+node_modules
+tema/**/vendor
+tema/**/node_modules
+tema/**/var/cache
+tema/**/var/log

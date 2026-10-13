@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" x-data="{ direction: 'ltr' }" x-bind:dir="direction">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Premium Tailwind CSS Admin & Dashboard Template" />
+    <meta name="author" content="SRBThemes" />
+
+    <!-- Site Tiltle -->
+    <title>Sliced - Tailwind CSS Admin & Dashboard Template</title>
+
+    <!-- Favicon Icon -->
+    <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+    <!-- Icon Css -->
+    <link rel="stylesheet" href="assets/css/remixicon.css" />
+
+    <!-- Style Css -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body x-data="main" class="relative overflow-x-hidden text-sm antialiased font-normal text-black font-cerebri dark:text-white vertical" :class="[ $store.app.sidebar ? 'toggle-sidebar' : '', $store.app.fullscreen ? 'full' : '',$store.app.mode]">
+
+
+    <!-- Start Layout -->
+    <div class="bg-[#f9fbfd] dark:bg-dark text-black min-h-screen relative z-10">
+
+        <!-- Start Background Images -->
+        <div class="bg-[url('../images/bg-main.png')] bg-black dark:bg-purple min-h-[220px] sm:min-h-[50vh] bg-bottom w-full -z-10 absolute"></div>
+        <!-- End Background Images -->
+
+        <!-- Start Header -->
+        <header>
+            <nav class="px-4 lg:px-7 py-4 max-w-[1440px] mx-auto">
+                <div class="flex flex-wrap items-center justify-between">
+                    <a href="index" class="flex items-center">
+                        <img src="assets/images/logo-light.svg" class="mx-auto dark-logo h-7 dark:hidden" alt="logo">
+                        <img src="assets/images/light.svg" class="hidden mx-auto light-logo h-7 dark:block" alt="logo">
+                    </a>
+                    <div class="flex items-center lg:order-2">
+                        <a href="signup" class="btn bg-purple dark:border-white dark:bg-white dark:text-black dark:hover:bg-white/90 border border-purple rounded-md text-white transition-all duration-300 hover:bg-purple/[0.85] hover:border-purple/[0.85]">Buy Now</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <!-- End Header -->
+
+        <!-- Start Main Content -->
+        <div class="min-h-[calc(100vh-134px)] py-4 px-4 sm:px-12 flex justify-center items-center max-w-[1440px] mx-auto">
+            <div class="max-w-[550px] flex-none w-full bg-white border border-black/10 p-6 sm:p-10 lg:px-10 lg:py-14 rounded-2xl dark:bg-darklight dark:border-darkborder">
+                <h1 class="mb-2 text-2xl font-semibold text-center dark:text-white">Forgot your password?</h1>
+                <p class="text-center text-muted mb-7 dark:text-darkmuted">Enter your Email and instructions will be sent to you!</p>
+                <form class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div class="sm:col-span-2">
+                        <input type="text" value="" placeholder="Email" class="form-input" required>
+                    </div>
+                    <button type="submit" class="btn sm:col-span-2 w-full py-3.5 text-base bg-purple border border-purple rounded-md text-white transition-all duration-300 hover:bg-purple/[0.85] hover:border-purple/[0.85]">
+                        Email password reset link
+                    </button>
+                </form>
+                <p class="mt-5 text-center">
+                    <a href="index" class="flex items-center justify-center gap-1 leading-none text-black dark:text-white">
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="inline-block w-5 h-5">
+                                <path fill="currentColor" d="M19 21.0001H5C4.44772 21.0001 4 20.5524 4 20.0001V11.0001L1 11.0001L11.3273 1.61162C11.7087 1.26488 12.2913 1.26488 12.6727 1.61162L23 11.0001L20 11.0001V20.0001C20 20.5524 19.5523 21.0001 19 21.0001ZM6 19.0001H18V9.15757L12 3.70302L6 9.15757V19.0001ZM8 15.0001H16V17.0001H8V15.0001Z"></path>
+                            </svg>
+                        </span>
+                        Back to home
+                    </a>
+                </p>
+            </div>
+        </div>
+        <!-- End Main Content -->
+
+        <!-- Start Footer -->
+        <footer class="py-5 text-center text-black dark:text-white/80 max-w-[1440px] mx-auto">
+            <div>
+                &copy;
+                <script>
+                    var year = new Date(); document.write(year.getFullYear());
+                </script>
+                Sliced.
+                <span>Crafted with
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-4 h-4 inline-block relative -mt-[2px]">
+                        <path d="M12.001 4.52853C14.35 2.42 17.98 2.49 20.2426 4.75736C22.5053 7.02472 22.583 10.637 20.4786 12.993L11.9999 21.485L3.52138 12.993C1.41705 10.637 1.49571 7.01901 3.75736 4.75736C6.02157 2.49315 9.64519 2.41687 12.001 4.52853Z" class="fill-purple"></path>
+                    </svg>
+                    by SRBThemes
+                </span>
+            </div>
+        </footer>
+        <!-- End Footer -->
+    </div>
+    <!-- End Layout -->
+
+    <button type="button" class="fixed z-50 px-4 text-white border-gray-200 shadow-lg h-11 ltr:right-0 rtl:left-0 bg-purple ltr:rounded-l-md rtl:rounded-r-md top-1/3" @click="direction = (direction === 'ltr') ? 'rtl' : 'ltr'"><span class="rtl:hidden">RTL</span> <span class="ltr:hidden">LTR</span></button>
+
+    <!-- All javascirpt -->
+    <!-- Alpine js -->
+    <script src="assets/js/alpine-collaspe.min.js"></script>
+    <script src="assets/js/alpine-persist.min.js"></script>
+    <script src="assets/js/alpine.min.js" defer></script>
+
+    <!-- Custom js -->
+    <script src="assets/js/custom.js"></script>
+</body>
+
+</html>

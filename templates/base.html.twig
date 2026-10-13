@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="bs" dir="ltr" x-data="{ direction: 'ltr' }" x-bind:dir="direction">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}{{ app_name }}{% endblock %}</title>
+        <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+        <style>
+            .header-user-name {
+                display: none;
+            }
+
+            .header-user-initials {
+                display: inline-flex;
+            }
+
+            @media (min-width: 640px) {
+                .header-user-name {
+                    display: inline;
+                }
+
+                .header-user-initials {
+                    display: none;
+                }
+            }
+        </style>
+        {% block stylesheets %}{% endblock %}
+    </head>
+    <body x-data="main" class="relative overflow-x-hidden text-sm antialiased font-normal text-black font-cerebri dark:text-white vertical" :class="[ $store.app.sidebar ? 'toggle-sidebar' : '', $store.app.fullscreen ? 'full' : '', $store.app.mode]">
+        <div class="bg-[#f9fbfd] dark:bg-dark text-black min-h-screen">
+            <div x-cloak class="fixed inset-0 bg-black/60 dark:bg-dark/90 z-[999] lg:hidden" :class="{'hidden' : !$store.app.sidebar}" @click="$store.app.toggleSidebar()"></div>
+
+            <div class="flex mx-auto main-container">
+                {% include 'components/sidebar.html.twig' %}
+
+                <div class="flex min-h-screen flex-1 flex-col min-w-0 main-content">
+                    <header class="sticky top-0 z-50 bg-white border-b dark:bg-darklight dark:border-darkborder border-black/10">
+                        <div class="flex items-center justify-between h-16 px-4 sm:px-6">
+                            <div class="flex items-center gap-3">
+                                <button type="button" class="flex items-center justify-center rounded size-10 text-black/70 bg-black/5 dark:text-white dark:bg-white/10 lg:hidden" @click="$store.app.toggleSidebar()" aria-label="Otvori meni">
+                                    <span class="text-2xl font-semibold leading-none" aria-hidden="true">&#9776;</span>
+                                </button>
+                                {% if app.user %}
+                                    <div class="min-w-0">
+                                        <div class="inline-flex max-w-[210px] items-center rounded-lg border border-purple/20 bg-white px-4 py-2 text-purple shadow-sm shadow-purple/10 sm:max-w-[360px]">
+                                            <span class="block truncate text-sm font-bold leading-5 text-purple sm:text-base">
+                                                {% if app.user.company %}
+                                                    {{ app.user.company.name }}
+                                                {% else %}
+                                                    Platforma
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex items-center gap-2 sm:gap-3">
+                                {% if app.user %}
+                                    {% set user_initials = ((app.user.firstName|default('')|first) ~ (app.user.lastName|default('')|first))|upper %}
+                                    <span class="header-user-initials items-center justify-center rounded bg-purple/10 px-2.5 py-2 text-sm font-bold leading-none text-purple">
+                                        {{ user_initials ?: (app.user.userIdentifier|first|upper) }}
+                                    </span>
+                                    <span class="header-user-name max-w-[240px] truncate text-sm font-medium text-black dark:text-white">{{ app.user.fullName ?: app.user.userIdentifier }}</span>
+                                    <a href="{{ path('app_logout') }}" class="inline-flex items-center justify-center rounded size-10 text-danger bg-danger/10 hover:bg-danger hover:text-white" title="Odjava" aria-label="Odjava">
+                                        <span class="text-2xl font-semibold leading-none" aria-hidden="true">&#x23FB;</span>
+                                    </a>
+                                {% else %}
+                                    <span class="hidden text-sm text-muted sm:inline">MVP temelj</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </header>
+
+                    <main class="flex-1 p-4 sm:p-6">
+                        {% block body %}{% endblock %}
+                    </main>
+
+                    <footer class="border-t border-black/10 bg-white px-4 py-3 text-xs text-muted dark:border-darkborder dark:bg-darklight sm:px-6">
+                        <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                            <span>&copy; {{ 'now'|date('Y') }} {{ app_name }}. Sva prava zadržana.</span>
+                            <span>Izrađeno za upravljanje voznim parkom.</span>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+        </div>
+
+        <script src="{{ asset('assets/js/alpine-collaspe.min.js') }}"></script>
+        <script src="{{ asset('assets/js/alpine-persist.min.js') }}"></script>
+        <script src="{{ asset('assets/js/alpine.min.js') }}" defer></script>
+        <script src="{{ asset('assets/js/custom.js') }}"></script>
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>

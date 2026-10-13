@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nova firma | {{ app_name }}{% endblock %}
+{% block page_title %}Nova firma{% endblock %}
+
+{% block body %}
+    {% include 'platform/company/_form.html.twig' with {
+        title: 'Nova firma',
+        description: 'Kreirajte novi tenant račun.',
+        button_label: 'Sačuvaj firmu'
+    } %}
+{% endblock %}

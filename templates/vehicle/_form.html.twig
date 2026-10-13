@@ -1,0 +1,496 @@
+{% set field_label_class = 'block mb-1 text-xs font-medium text-black dark:text-white' %}
+{% set field_input_class = 'w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder' %}
+{% set embedded = embedded|default(false) %}
+
+<style>
+    .vehicle-form-layout {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .vehicle-form-fields {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    @media (min-width: 768px) {
+        .vehicle-form-fields {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .vehicle-form-layout {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .vehicle-form-fields {
+            grid-column: span 3 / span 3;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+</style>
+
+<div class="w-full">
+    {% if not embedded %}
+        <div class="mb-4">
+            <a href="{{ path('vehicle_index') }}" class="inline-flex items-center gap-2 text-sm text-muted hover:text-purple">
+                <i class="ri-arrow-left-line"></i>
+                Nazad na vozila
+            </a>
+        </div>
+    {% endif %}
+
+    {% if embedded %}
+        <div>
+    {% else %}
+        <section class="p-3 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10 sm:p-4">
+    {% endif %}
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold text-black dark:text-white">{{ title }}</h2>
+            <p class="mt-1 text-sm text-muted">{{ description }}</p>
+        </div>
+
+        {{ form_start(form, {attr: {class: 'space-y-3'}}) }}
+            {% if scan_enabled|default(false) %}
+                <div class="rounded border border-purple/20 bg-purple/10 p-3" data-document-scan data-scan-url="{{ scan_url }}">
+                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div class="min-w-0">
+                            <h3 class="text-sm font-semibold text-black dark:text-white">{{ scan_title }}</h3>
+                            <p class="mt-1 text-xs text-muted">{{ scan_description }}</p>
+                            <p class="mt-2 inline-flex rounded bg-info/10 px-2 py-1 text-xs font-semibold text-info">
+                                Za prepoznavanje teksta sa slika koristi se umjetna inteligencija.
+                            </p>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" class="inline-flex items-center justify-center rounded bg-purple px-3 py-2 text-sm font-semibold text-white" data-camera-start>
+                                Otvori kameru
+                            </button>
+                            <label class="inline-flex cursor-pointer items-center justify-center rounded border border-purple/20 bg-white px-3 py-2 text-sm font-semibold text-purple">
+                                Odaberi sliku
+                                <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" class="hidden" data-scan-input>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 hidden space-y-3" data-camera-panel>
+                        <div class="relative overflow-hidden rounded border border-black/10 bg-black dark:border-darkborder">
+                            <video class="w-full max-h-[420px] object-contain" autoplay muted playsinline data-camera-video></video>
+                            <div class="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
+                                <div class="w-full max-w-[620px] aspect-[1.586/1] rounded border-2 border-white/90 shadow-[0_0_0_9999px_rgba(0,0,0,0.35)]"></div>
+                            </div>
+                        </div>
+                        <canvas class="hidden" data-camera-canvas></canvas>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" class="inline-flex items-center justify-center rounded bg-purple px-3 py-2 text-sm font-semibold text-white" data-camera-capture>
+                                Uslikaj
+                            </button>
+                            <button type="button" class="inline-flex items-center justify-center rounded bg-white px-3 py-2 text-sm font-semibold text-purple" data-camera-stop>
+                                Zatvori
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 hidden rounded border border-purple/20 bg-white p-3" data-scan-progress>
+                        <div class="mb-2 flex items-center justify-between gap-3">
+                            <span class="text-sm font-semibold text-black dark:text-white">Čitam dokument</span>
+                            <span class="text-xs text-muted">AI obrada u toku</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-purple" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div class="mt-3 hidden rounded bg-white px-3 py-2 text-sm text-muted" data-scan-status></div>
+                    <div class="mt-3 hidden flex-wrap gap-2" data-scan-warnings></div>
+                    <div class="mt-3 hidden rounded border border-black/10 bg-white p-3 dark:border-darkborder dark:bg-dark" data-scan-read-fields>
+                        <div class="text-sm font-semibold text-black dark:text-white">AI je pročitao</div>
+                        <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2" data-scan-read-fields-list></div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="vehicle-form-layout">
+                <div class="vehicle-form-fields">
+                <div>
+                    {{ form_label(form.registrationNumber, null, {label_attr: {class: field_label_class}}) }}
+                    {{ form_widget(form.registrationNumber, {attr: {class: field_input_class}}) }}
+                    {{ form_errors(form.registrationNumber) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.vin, null, {label_attr: {class: field_label_class}}) }}
+                    {{ form_widget(form.vin, {attr: {class: field_input_class}}) }}
+                    {{ form_errors(form.vin) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.manufacturer, null, {label_attr: {class: field_label_class}}) }}
+                    {{ form_widget(form.manufacturer, {attr: {class: field_input_class}}) }}
+                    {{ form_errors(form.manufacturer) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.model, null, {label_attr: {class: field_label_class}}) }}
+                    {{ form_widget(form.model, {attr: {class: field_input_class}}) }}
+                    {{ form_errors(form.model) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.vehicleType, null, {label_attr: {class: field_label_class}}) }}
+                    {{ form_widget(form.vehicleType, {attr: {class: field_input_class}}) }}
+                    {{ form_errors(form.vehicleType) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.productionYear, null, {label_attr: {class: field_label_class}}) }}
+                    {{ form_widget(form.productionYear, {attr: {class: field_input_class}}) }}
+                    {{ form_errors(form.productionYear) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.engineDisplacement, null, {label_attr: {class: field_label_class}}) }}
+                    {{ form_widget(form.engineDisplacement, {attr: {class: field_input_class}}) }}
+                    {{ form_errors(form.engineDisplacement) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.enginePowerKw, null, {label_attr: {class: field_label_class}}) }}
+                    {{ form_widget(form.enginePowerKw, {attr: {class: field_input_class}}) }}
+                    {{ form_errors(form.enginePowerKw) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.fuelType, null, {label_attr: {class: field_label_class}}) }}
+                    {{ form_widget(form.fuelType, {attr: {class: field_input_class}}) }}
+                    {{ form_errors(form.fuelType) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.euroStandard, null, {label_attr: {class: field_label_class}}) }}
+                    {{ form_widget(form.euroStandard, {attr: {class: field_input_class}}) }}
+                    {{ form_errors(form.euroStandard) }}
+                </div>
+
+                </div>
+
+                <div class="space-y-3">
+                    <div>
+                        {{ form_label(form.registrationValidUntil, null, {label_attr: {class: field_label_class}}) }}
+                        {{ form_widget(form.registrationValidUntil, {attr: {class: field_input_class}}) }}
+                        {{ form_errors(form.registrationValidUntil) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.currentMileage, null, {label_attr: {class: field_label_class}}) }}
+                        {{ form_widget(form.currentMileage, {attr: {class: field_input_class}}) }}
+                        {{ form_errors(form.currentMileage) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.status, null, {label_attr: {class: field_label_class}}) }}
+                        {{ form_widget(form.status, {attr: {class: field_input_class}}) }}
+                        {{ form_errors(form.status) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.notes, null, {label_attr: {class: field_label_class}}) }}
+                        {{ form_widget(form.notes, {attr: {class: field_input_class ~ ' min-h-36 resize-y'}}) }}
+                        {{ form_errors(form.notes) }}
+                    </div>
+
+                    <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded bg-purple px-4 py-2 text-sm text-white">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4h12l2 2v14H5V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 4v6h8M8 20v-6h8v6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                        {{ button_label }}
+                    </button>
+                </div>
+            </div>
+        {{ form_end(form) }}
+    {% if embedded %}
+        </div>
+    {% else %}
+        </section>
+    {% endif %}
+</div>
+
+{% if false and scan_enabled|default(false) %}
+    <script>
+        (() => {
+            const panel = document.querySelector('[data-document-scan]');
+            if (!panel) {
+                return;
+            }
+
+            const form = panel.closest('form');
+            const input = panel.querySelector('[data-scan-input]');
+            const button = panel.querySelector('[data-scan-button]');
+            const status = panel.querySelector('[data-scan-status]');
+            const warnings = panel.querySelector('[data-scan-warnings]');
+
+            const showStatus = (message, isError = false) => {
+                status.textContent = message;
+                status.classList.remove('hidden', 'text-danger', 'text-success');
+                status.classList.add(isError ? 'text-danger' : 'text-success');
+            };
+
+            const fillField = (field, value) => {
+                if (value === null || value === undefined || value === '') {
+                    return;
+                }
+
+                const element = form.querySelector(`[name$="[${field}]"]`);
+                if (element) {
+                    element.value = value;
+                    element.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            };
+
+            button.addEventListener('click', () => input.click());
+
+            input.addEventListener('change', async () => {
+                const file = input.files && input.files[0];
+                if (!file) {
+                    return;
+                }
+
+                const body = new FormData();
+                body.append('document', file);
+                button.disabled = true;
+                status.classList.add('hidden');
+                warnings.classList.add('hidden');
+                warnings.innerHTML = '';
+
+                try {
+                    const response = await fetch(panel.dataset.scanUrl, {
+                        method: 'POST',
+                        body,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+                    const payload = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(payload.message || 'Nisam uspio pročitati dokument.');
+                    }
+
+                    Object.entries(payload.fields || {}).forEach(([field, value]) => fillField(field, value));
+
+                    if ((payload.warnings || []).length > 0) {
+                        warnings.classList.remove('hidden');
+                        warnings.classList.add('flex');
+                        payload.warnings.forEach((warning) => {
+                            const badge = document.createElement('span');
+                            badge.className = 'inline-flex rounded bg-warning/10 px-3 py-1 text-xs font-semibold text-warning';
+                            badge.textContent = warning;
+                            warnings.appendChild(badge);
+                        });
+                    }
+
+                    showStatus('Polja su popunjena. Provjerite podatke prije čuvanja.');
+                } catch (error) {
+                    showStatus(error.message, true);
+                } finally {
+                    button.disabled = false;
+                    input.value = '';
+                }
+            });
+        })();
+    </script>
+{% endif %}
+
+{% if scan_enabled|default(false) %}
+    <script>
+        (() => {
+            const panel = document.querySelector('[data-document-scan]');
+            if (!panel) {
+                return;
+            }
+
+            const form = panel.closest('form');
+            const input = panel.querySelector('[data-scan-input]');
+            const startButton = panel.querySelector('[data-camera-start]');
+            const cameraPanel = panel.querySelector('[data-camera-panel]');
+            const video = panel.querySelector('[data-camera-video]');
+            const canvas = panel.querySelector('[data-camera-canvas]');
+            const captureButton = panel.querySelector('[data-camera-capture]');
+            const stopButton = panel.querySelector('[data-camera-stop]');
+            const progress = panel.querySelector('[data-scan-progress]');
+            const status = panel.querySelector('[data-scan-status]');
+            const warnings = panel.querySelector('[data-scan-warnings]');
+            const readFields = panel.querySelector('[data-scan-read-fields]');
+            const readFieldsList = panel.querySelector('[data-scan-read-fields-list]');
+            let stream = null;
+
+            const showStatus = (message, isError = false) => {
+                status.textContent = message;
+                status.classList.remove('hidden', 'text-danger', 'text-success');
+                status.classList.add(isError ? 'text-danger' : 'text-success');
+            };
+
+            const fillField = (field, value) => {
+                if (value === null || value === undefined || value === '') {
+                    return;
+                }
+
+                const element = form.querySelector(`[name$="[${field}]"]`);
+                if (element) {
+                    element.value = value;
+                    element.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            };
+
+            const renderReadFields = (fields) => {
+                readFields.classList.add('hidden');
+                readFieldsList.innerHTML = '';
+
+                if (!Array.isArray(fields) || fields.length === 0) {
+                    return;
+                }
+
+                fields.forEach((field) => {
+                    if (!field || !field.value) {
+                        return;
+                    }
+
+                    const item = document.createElement('div');
+                    item.className = 'rounded border border-black/10 px-3 py-2 dark:border-darkborder';
+
+                    const label = document.createElement('div');
+                    label.className = 'text-xs font-semibold uppercase text-muted';
+                    label.textContent = field.label || 'Polje';
+
+                    const value = document.createElement('div');
+                    value.className = 'mt-1 break-all text-sm font-semibold text-black dark:text-white';
+                    value.textContent = field.value;
+
+                    item.appendChild(label);
+                    item.appendChild(value);
+                    readFieldsList.appendChild(item);
+                });
+
+                if (readFieldsList.children.length > 0) {
+                    readFields.classList.remove('hidden');
+                }
+            };
+
+            const stopCamera = () => {
+                if (stream) {
+                    stream.getTracks().forEach((track) => track.stop());
+                    stream = null;
+                }
+
+                video.srcObject = null;
+                cameraPanel.classList.add('hidden');
+            };
+
+            const startCamera = async () => {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showStatus('Kamera nije dostupna u ovom browseru. Možete odabrati sliku.', true);
+                    return;
+                }
+
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: { ideal: 'environment' },
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 },
+                        },
+                        audio: false,
+                    });
+
+                    video.srcObject = stream;
+                    cameraPanel.classList.remove('hidden');
+                    status.classList.add('hidden');
+                } catch (error) {
+                    showStatus('Kamera nije dostupna ili dozvola nije odobrena. Možete odabrati sliku.', true);
+                }
+            };
+
+            const scanFile = async (file) => {
+                if (!file) {
+                    return;
+                }
+
+                const body = new FormData();
+                body.append('document', file);
+                startButton.disabled = true;
+                captureButton.disabled = true;
+                progress.classList.remove('hidden');
+                showStatus('Čitam dokument...');
+                warnings.classList.add('hidden');
+                warnings.innerHTML = '';
+                readFields.classList.add('hidden');
+                readFieldsList.innerHTML = '';
+
+                try {
+                    const response = await fetch(panel.dataset.scanUrl, {
+                        method: 'POST',
+                        body,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    });
+                    const payload = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(payload.message || 'Nisam uspio pročitati dokument.');
+                    }
+
+                    Object.entries(payload.fields || {}).forEach(([field, value]) => fillField(field, value));
+                    renderReadFields(payload.readFields || []);
+
+                    if ((payload.warnings || []).length > 0) {
+                        warnings.classList.remove('hidden');
+                        warnings.classList.add('flex');
+                        payload.warnings.forEach((warning) => {
+                            const badge = document.createElement('span');
+                            badge.className = 'inline-flex rounded bg-warning/10 px-3 py-1 text-xs font-semibold text-warning';
+                            badge.textContent = warning;
+                            warnings.appendChild(badge);
+                        });
+                    }
+
+                    showStatus('Polja su popunjena. Provjerite podatke prije čuvanja.');
+                } catch (error) {
+                    showStatus(error.message, true);
+                } finally {
+                    startButton.disabled = false;
+                    captureButton.disabled = false;
+                    input.value = '';
+                    progress.classList.add('hidden');
+                }
+            };
+
+            const capturePhoto = () => {
+                if (!video.videoWidth || !video.videoHeight) {
+                    showStatus('Kamera još nije spremna. Pokušajte ponovo za par sekundi.', true);
+                    return;
+                }
+
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                canvas.toBlob((blob) => {
+                    if (!blob) {
+                        showStatus('Nisam uspio napraviti sliku. Pokušajte ponovo.', true);
+                        return;
+                    }
+
+                    stopCamera();
+                    scanFile(new File([blob], 'dokument.jpg', { type: 'image/jpeg' }));
+                }, 'image/jpeg', 0.92);
+            };
+
+            startButton.addEventListener('click', startCamera);
+            captureButton.addEventListener('click', capturePhoto);
+            stopButton.addEventListener('click', stopCamera);
+            input.addEventListener('change', () => {
+                const file = input.files && input.files[0];
+                stopCamera();
+                scanFile(file);
+            });
+            window.addEventListener('beforeunload', stopCamera);
+        })();
+    </script>
+{% endif %}

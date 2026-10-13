@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="bs">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Prijava | {{ app_name }}</title>
+        <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+        <style>
+            body.login-body {
+                background: #ffffff;
+                padding-bottom: 46px;
+            }
+
+            .login-body main {
+                min-height: 100vh;
+                display: grid;
+                grid-template-columns: minmax(420px, 0.9fr) 1.1fr;
+                background: #ffffff;
+            }
+
+            .login-body main > section:first-child {
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 48px;
+                background:
+                    linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(88, 80, 236, 0.88)),
+                    url("{{ asset('assets/images/bg-main.png') }}");
+                background-size: cover;
+                background-position: center;
+            }
+
+            .login-body main > section:first-child > div {
+                width: 100%;
+                max-width: 420px;
+                padding: 34px;
+                border-radius: 12px;
+                background: #ffffff;
+                box-shadow: 0 28px 80px rgba(0, 0, 0, 0.18);
+            }
+
+            .login-body main > section:first-child h1 {
+                margin: 0;
+                font-size: 34px;
+                line-height: 1.1;
+                font-weight: 800;
+                color: #111827;
+            }
+
+            .login-body main > section:first-child p {
+                margin: 10px 0 28px;
+                color: #6b7280;
+                font-size: 15px;
+            }
+
+            .login-body main > section:first-child .mb-8 img {
+                display: none;
+            }
+
+            .login-body main > section:first-child form {
+                display: grid;
+                gap: 18px;
+            }
+
+            .login-body main > section:first-child label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 700;
+                color: #111827;
+            }
+
+            .login-body main > section:first-child input {
+                width: 100%;
+                height: 48px;
+                padding: 0 14px;
+                border: 1px solid #d9dce7;
+                border-radius: 8px;
+                background: #ffffff;
+                color: #111827;
+                outline: none;
+            }
+
+            .login-body main > section:first-child input:focus {
+                border-color: #6d5dfc;
+                box-shadow: 0 0 0 4px rgba(109, 93, 252, 0.14);
+            }
+
+            .login-body main > section:first-child button {
+                width: 100%;
+                height: 50px;
+                border: 0;
+                border-radius: 8px;
+                background: #6d5dfc;
+                color: #ffffff;
+                font-weight: 800;
+                cursor: pointer;
+                box-shadow: 0 16px 30px rgba(109, 93, 252, 0.28);
+            }
+
+            .login-body main > section:last-child {
+                display: flex !important;
+                min-height: 100vh;
+                align-items: center;
+                justify-content: center;
+                padding: 56px;
+                background: #ffffff;
+                color: #ffffff;
+            }
+
+            .login-body main > section:last-child > div {
+                max-width: 580px;
+                text-align: center;
+            }
+
+            .login-body main > section:last-child > div > div:first-child {
+                width: min(72vw, 680px) !important;
+                height: auto !important;
+                min-height: 0;
+                padding: 0;
+                margin: 0 auto !important;
+                border-radius: 14px;
+                background: transparent !important;
+                box-shadow: none !important;
+            }
+
+            .login-body main > section:last-child > div > div:first-child img {
+                width: 100% !important;
+                height: auto !important;
+                max-height: none !important;
+            }
+
+            .login-body main > section:last-child h2,
+            .login-body main > section:last-child > div > p,
+            .login-body main > section:last-child .grid {
+                display: none !important;
+            }
+
+            .login-brand-logo-wrap {
+                width: min(76vw, 640px);
+                padding: 0;
+                border-radius: 0;
+                background: transparent;
+                box-shadow: none;
+            }
+
+            .login-brand-logo {
+                display: block;
+                width: 100%;
+                height: auto;
+            }
+
+            @media (max-width: 991px) {
+                .login-body main {
+                    display: block;
+                }
+
+                .login-body main > section:first-child {
+                    padding: 24px;
+                    background:
+                        linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(88, 80, 236, 0.88)),
+                        url("{{ asset('assets/images/bg-main.png') }}");
+                    background-size: cover;
+                    background-position: center;
+                }
+
+                .login-body main > section:first-child > div {
+                    padding: 26px;
+                    border-radius: 10px;
+                    background: #ffffff;
+                    box-shadow: 0 18px 45px rgba(17, 24, 39, 0.08);
+                }
+
+                .login-body main > section:first-child .mb-8 img {
+                    display: block;
+                    height: 124px;
+                    margin: 0 auto 18px;
+                }
+
+                .login-body main > section:first-child h1,
+                .login-body main > section:first-child p {
+                    text-align: center;
+                }
+
+                .login-body main > section:last-child {
+                    display: none !important;
+                }
+            }
+        </style>
+    </head>
+    <body class="login-body text-sm antialiased font-normal text-black font-cerebri dark:text-white">
+        <main class="min-h-screen bg-[#f9fbfd] dark:bg-dark lg:grid lg:grid-cols-[minmax(420px,0.9fr)_1.1fr]">
+            <section class="flex min-h-screen items-center justify-center p-4 sm:p-8 lg:bg-white lg:dark:bg-darklight">
+                <div class="w-full max-w-md">
+                    <div class="mb-8 text-center lg:text-left">
+                        <img src="{{ asset('assets/images/logo-light.png') }}" class="h-16 mx-auto mb-3 lg:mx-0" alt="{{ app_name }}">
+                        <h1 class="text-3xl font-semibold text-black dark:text-white">Prijava</h1>
+                        <p class="mt-2 text-muted">Unesite pristupne podatke.</p>
+                    </div>
+
+                    <div class="p-6 bg-white border rounded dark:bg-dark dark:border-darkborder border-black/10 lg:border-0 lg:p-0 lg:shadow-none">
+                    {% if error %}
+                        <div class="p-3 mb-4 text-sm rounded text-danger bg-danger/10">
+                            Pogrešna email adresa ili šifra.
+                        </div>
+                    {% endif %}
+
+                    <form method="post" class="space-y-4">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                        <div>
+                            <label for="username" class="block mb-2 text-sm font-medium text-black dark:text-white">Email adresa</label>
+                            <input
+                                type="email"
+                                value="{{ last_username }}"
+                                name="_username"
+                                id="username"
+                                autocomplete="email"
+                                required
+                                autofocus
+                                class="w-full px-4 py-2.5 bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"
+                            >
+                        </div>
+
+                        <div>
+                            <label for="password" class="block mb-2 text-sm font-medium text-black dark:text-white">Šifra</label>
+                            <input
+                                type="password"
+                                name="_password"
+                                id="password"
+                                autocomplete="current-password"
+                                required
+                                class="w-full px-4 py-2.5 bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"
+                            >
+                        </div>
+
+                        <button type="submit" class="w-full px-4 py-2.5 text-white rounded bg-purple">
+                            Prijavi se
+                        </button>
+                    </form>
+                    </div>
+                </div>
+            </section>
+
+            <section class="hidden min-h-screen items-center justify-center p-10 lg:flex" style="background:#ffffff !important;">
+                <div class="max-w-xl text-center text-white">
+                    <div class="mx-auto mb-8 flex size-28 items-center justify-center rounded bg-white">
+                        <img src="{{ asset('assets/images/logo-light.png') }}" class="h-20" alt="{{ app_name }}">
+                    </div>
+                    <h2 class="text-5xl font-semibold">{{ app_name }}</h2>
+                    <p class="mt-5 text-lg leading-8 text-white/85">Vozila, vozači i dokumenti pod kontrolom, bez papira i lutanja po fasciklama.</p>
+                    <div class="grid grid-cols-3 gap-3 mt-10">
+                        <div class="rounded border border-white/15 bg-white/10 p-4">
+                            <i class="ri-truck-line text-2xl"></i>
+                            <p class="mt-2 text-xs text-white/75">Vozila</p>
+                        </div>
+                        <div class="rounded border border-white/15 bg-white/10 p-4">
+                            <i class="ri-user-3-line text-2xl"></i>
+                            <p class="mt-2 text-xs text-white/75">Vozači</p>
+                        </div>
+                        <div class="rounded border border-white/15 bg-white/10 p-4">
+                            <i class="ri-ai-generate text-2xl"></i>
+                            <p class="mt-2 text-xs text-white/75">Dokumenti</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <footer class="fixed bottom-0 left-0 right-0 z-40 border-t border-black/10 bg-white px-4 py-3 text-xs text-muted">
+            <div class="mx-auto flex max-w-7xl flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <span>&copy; {{ 'now'|date('Y') }} {{ app_name }}. Sva prava zadržana.</span>
+                <span>Izrađeno za upravljanje voznim parkom.</span>
+            </div>
+        </footer>
+    </body>
+</html>

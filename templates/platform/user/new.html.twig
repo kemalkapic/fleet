@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Novi korisnik | {{ app_name }}{% endblock %}
+{% block page_title %}Novi korisnik{% endblock %}
+
+{% block body %}
+    {% include 'platform/user/_form.html.twig' with {
+        title: 'Novi korisnik',
+        description: 'Kreirajte platformskog ili tenant korisnika.',
+        button_label: 'Sačuvaj korisnika'
+    } %}
+{% endblock %}

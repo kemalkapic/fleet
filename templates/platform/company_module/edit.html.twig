@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Moduli firme | {{ app_name }}{% endblock %}
+{% block page_title %}Moduli firme{% endblock %}
+
+{% block body %}
+    <div class="max-w-4xl">
+        <div class="mb-4">
+            <a href="{{ path('platform_company_index') }}" class="inline-flex items-center gap-2 text-sm text-muted hover:text-purple">
+                <i class="ri-arrow-left-line"></i>
+                Nazad na firme
+            </a>
+        </div>
+
+        <section class="p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
+            <div class="flex flex-col gap-2 mb-5 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <h2 class="text-xl font-semibold text-black dark:text-white">{{ company.name }}</h2>
+                    <p class="mt-1 text-muted">Uključite module koji su dostupni ovoj firmi.</p>
+                </div>
+                <span class="px-3 py-1 text-xs rounded bg-info/10 text-info">{{ company.status }}</span>
+            </div>
+
+            {% for message in app.flashes('success') %}
+                <div class="p-3 mb-4 text-sm rounded text-success bg-success/10">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            <form method="post">
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    {% for module in modules %}
+                        {% set setting = settings[module.value] ?? null %}
+                        <label class="flex items-start gap-3 p-4 border rounded cursor-pointer border-black/10 dark:border-darkborder">
+                            <input
+                                type="checkbox"
+                                name="modules[]"
+                                value="{{ module.value }}"
+                                class="mt-1"
+                                {% if setting and setting.enabled %}checked{% endif %}
+                            >
+                            <span>
+                                <span class="block font-medium text-black dark:text-white">{{ module.label() }}</span>
+                                <span class="block mt-1 text-xs text-muted">{{ module.value }}</span>
+                            </span>
+                        </label>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-5">
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 text-white rounded bg-purple">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4h12l2 2v14H5V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 4v6h8M8 20v-6h8v6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                        Sačuvaj module
+                    </button>
+                </div>
+            </form>
+        </section>
+    </div>
+{% endblock %}

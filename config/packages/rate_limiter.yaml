@@ -1,0 +1,6 @@
+framework:
+    rate_limiter:
+        document_scan:
+            policy: sliding_window
+            limit: 30
+            interval: '10 minutes'

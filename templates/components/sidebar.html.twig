@@ -1,0 +1,106 @@
+{% set current_route = app.request.attributes.get('_route') %}
+{% set is_dashboard = current_route == 'app_dashboard' %}
+{% set is_companies = current_route starts with 'platform_company_' %}
+{% set is_users = current_route starts with 'platform_user_' %}
+{% set is_vehicles = current_route starts with 'vehicle_' and not (current_route starts with 'vehicle_scan_') %}
+{% set is_drivers = current_route starts with 'driver_' and not (current_route starts with 'driver_scan_') %}
+{% set is_documents = current_route starts with 'document_' %}
+{% set is_notifications = current_route starts with 'notification_' %}
+
+<nav class="sidebar fixed z-[9999] flex-none w-[240px] ltr:border-r rtl:border-l dark:bg-darkborder border-black/10 transition-all duration-300 overflow-hidden">
+    <div class="h-full bg-white dark:bg-darklight">
+        <div class="p-4">
+            <a href="{{ path('app_dashboard') }}" class="flex items-center justify-center gap-2 w-full main-logo">
+                <img src="{{ asset('assets/images/logo-light.png') }}" class="h-18" alt="{{ app_name }}">
+                <span class="text-lg font-semibold text-black dark:text-white"></span>
+            </a>
+        </div>
+
+        <div class="h-[calc(100vh-60px)] overflow-y-auto overflow-x-hidden px-5 pb-4">
+            <ul class="relative flex flex-col gap-1">
+                <h2 class="my-2 text-sm text-black/50 dark:text-white/30"><span>Osnovno</span></h2>
+
+                <li class="menu nav-item">
+                    <a href="{{ path('app_dashboard') }}" class="nav-link group {{ is_dashboard ? 'active' : '' }}">
+                        <div class="flex items-center">
+                            <i class="ri-dashboard-line text-xl"></i>
+                            <span class="ltr:pl-1.5 rtl:pr-1.5">Kontrolna tabla</span>
+                        </div>
+                    </a>
+                </li>
+
+                {% if is_granted('ROLE_SUPER_ADMIN') %}
+                    <li class="menu nav-item">
+                        <a href="{{ path('platform_company_index') }}" class="nav-link group {{ is_companies ? 'active' : '' }}">
+                            <div class="flex items-center">
+                                <i class="ri-building-4-line text-xl"></i>
+                                <span class="ltr:pl-1.5 rtl:pr-1.5">Firme</span>
+                            </div>
+                        </a>
+                    </li>
+
+                    <li class="menu nav-item">
+                        <a href="{{ path('platform_user_index') }}" class="nav-link group {{ is_users ? 'active' : '' }}">
+                            <div class="flex items-center">
+                                <i class="ri-user-settings-line text-xl"></i>
+                                <span class="ltr:pl-1.5 rtl:pr-1.5">Korisnici</span>
+                            </div>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% if is_granted('ROLE_COMPANY_ADMIN') and (
+                    module_enabled('vehicles')
+                    or module_enabled('drivers')
+                ) %}
+                    <h2 class="my-2 text-sm text-black/50 dark:text-white/30"><span>Vozni park</span></h2>
+                {% endif %}
+
+                {% if is_granted('ROLE_COMPANY_ADMIN') and module_enabled('vehicles') %}
+                    <li class="menu nav-item">
+                        <a href="{{ path('vehicle_index') }}" class="nav-link group {{ is_vehicles ? 'active' : '' }}">
+                            <div class="flex items-center">
+                                <i class="ri-truck-line text-xl"></i>
+                                <span class="ltr:pl-1.5 rtl:pr-1.5">Vozila</span>
+                            </div>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% if is_granted('ROLE_COMPANY_ADMIN') and module_enabled('drivers') %}
+                    <li class="menu nav-item">
+                        <a href="{{ path('driver_index') }}" class="nav-link group {{ is_drivers ? 'active' : '' }}">
+                            <div class="flex items-center">
+                                <i class="ri-user-3-line text-xl"></i>
+                                <span class="ltr:pl-1.5 rtl:pr-1.5">Vozači</span>
+                            </div>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% if is_granted('ROLE_COMPANY_ADMIN') and module_enabled('documents') %}
+                    <h2 class="my-2 text-sm text-black/50 dark:text-white/30"><span>Menadžment</span></h2>
+
+                    <li class="menu nav-item">
+                        <a href="{{ path('document_index') }}" class="nav-link group {{ is_documents ? 'active' : '' }}">
+                            <div class="flex items-center">
+                                <i class="ri-file-list-3-line text-xl"></i>
+                                <span class="ltr:pl-1.5 rtl:pr-1.5">Dokumenti</span>
+                            </div>
+                        </a>
+                    </li>
+
+                    <li class="menu nav-item">
+                        <a href="{{ path('notification_index') }}" class="nav-link group {{ is_notifications ? 'active' : '' }}">
+                            <div class="flex items-center">
+                                <i class="ri-notification-3-line text-xl"></i>
+                                <span class="ltr:pl-1.5 rtl:pr-1.5">Notifikacije</span>
+                            </div>
+                        </a>
+                    </li>
+                {% endif %}
+
+            </ul>
+        </div>
+    </div>
+</nav>
