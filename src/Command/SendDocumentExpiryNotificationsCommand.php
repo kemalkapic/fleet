@@ -36,9 +36,12 @@ class SendDocumentExpiryNotificationsCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $sent = 0;
+        $emailsSent = 0;
         $skipped = 0;
         $failed = 0;
+        $emailsFailed = 0;
         $today = new \DateTimeImmutable('today');
+        $batches = [];
 
         foreach (self::THRESHOLDS as $daysBefore) {
             $expiryDate = $today->modify(sprintf('+%d days', $daysBefore));
@@ -78,28 +81,62 @@ class SendDocumentExpiryNotificationsCommand extends Command
                         ->setRecipient($recipient->getEmail())
                         ->setMessageText($messageText);
 
-                    try {
-                        $this->mailer->send((new Email())
-                            ->from(new Address($this->mailFrom, $this->appName))
-                            ->to(new Address($recipient->getEmail(), $recipient->getFullName() ?: $recipient->getEmail()))
-                            ->subject($this->buildSubject($document, $daysBefore))
-                            ->text($messageText));
-
-                        $notification->markSent();
-                        ++$sent;
-                    } catch (\Throwable $exception) {
-                        $notification->markFailed($exception->getMessage());
-                        ++$failed;
+                    $batchKey = ($company->getId() ?? spl_object_id($company)).'|'.mb_strtolower($recipient->getEmail());
+                    if (!isset($batches[$batchKey])) {
+                        $batches[$batchKey] = [
+                            'recipient' => $recipient,
+                            'items' => [],
+                        ];
                     }
 
-                    $this->entityManager->persist($notification);
+                    $batches[$batchKey]['items'][] = [
+                        'document' => $document,
+                        'daysBefore' => $daysBefore,
+                        'messageText' => $messageText,
+                        'notification' => $notification,
+                    ];
+                }
+            }
+        }
+
+        foreach ($batches as $batch) {
+            $items = $batch['items'];
+            usort($items, static fn (array $left, array $right): int => $left['daysBefore'] <=> $right['daysBefore']);
+            $recipient = $batch['recipient'];
+
+            try {
+                $this->mailer->send((new Email())
+                    ->from(new Address($this->mailFrom, $this->appName))
+                    ->to(new Address($recipient->getEmail(), $recipient->getFullName() ?: $recipient->getEmail()))
+                    ->subject($this->buildBatchSubject($items))
+                    ->text($this->buildBatchMessage($items)));
+
+                ++$emailsSent;
+                foreach ($items as $item) {
+                    $item['notification']->markSent();
+                    $this->entityManager->persist($item['notification']);
+                    ++$sent;
+                }
+            } catch (\Throwable $exception) {
+                ++$emailsFailed;
+                foreach ($items as $item) {
+                    $item['notification']->markFailed($exception->getMessage());
+                    $this->entityManager->persist($item['notification']);
+                    ++$failed;
                 }
             }
         }
 
         $this->entityManager->flush();
 
-        $output->writeln(sprintf('Sent: %d, failed: %d, skipped: %d', $sent, $failed, $skipped));
+        $output->writeln(sprintf(
+            'Emails sent: %d, emails failed: %d, notifications sent: %d, notifications failed: %d, skipped: %d',
+            $emailsSent,
+            $emailsFailed,
+            $sent,
+            $failed,
+            $skipped,
+        ));
 
         return Command::SUCCESS;
     }
@@ -134,6 +171,41 @@ class SendDocumentExpiryNotificationsCommand extends Command
             $document->getOwnerLabel(),
             $expiry,
         );
+    }
+
+    /**
+     * @param list<array{document: FleetDocument, daysBefore: int, messageText: string, notification: Notification}> $items
+     */
+    private function buildBatchSubject(array $items): string
+    {
+        if (count($items) === 1) {
+            return $this->buildSubject($items[0]['document'], $items[0]['daysBefore']);
+        }
+
+        return sprintf('Pregled rokova: %d aktivna upozorenja', count($items));
+    }
+
+    /**
+     * @param list<array{document: FleetDocument, daysBefore: int, messageText: string, notification: Notification}> $items
+     */
+    private function buildBatchMessage(array $items): string
+    {
+        if (count($items) === 1) {
+            return $items[0]['messageText'];
+        }
+
+        $lines = ['Evidencije kojima se približava istek:', ''];
+
+        foreach ($items as $index => $item) {
+            $priority = match ($item['daysBefore']) {
+                1 => 'HITNO',
+                7 => 'UPOZORENJE',
+                default => 'PODSJETNIK',
+            };
+            $lines[] = sprintf('%d. [%s] %s', $index + 1, $priority, $item['messageText']);
+        }
+
+        return implode(PHP_EOL, $lines);
     }
 
     private function formatDocumentType(string $type): string
