@@ -82,7 +82,7 @@ class SendDocumentExpiryNotificationsCommand extends Command
                         $this->mailer->send((new Email())
                             ->from(new Address($this->mailFrom, $this->appName))
                             ->to(new Address($recipient->getEmail(), $recipient->getFullName() ?: $recipient->getEmail()))
-                            ->subject('Dokument istice za '.$daysBefore.' dana')
+                            ->subject($this->buildSubject($document, $daysBefore))
                             ->text($messageText));
 
                         $notification->markSent();
@@ -106,15 +106,33 @@ class SendDocumentExpiryNotificationsCommand extends Command
 
     private function buildMessage(FleetDocument $document, int $daysBefore): string
     {
-        $ownerType = $document->getOwnerType() === FleetDocument::OWNER_DRIVER ? 'vozaca' : 'vozilo';
+        $ownerType = $document->getOwnerType() === FleetDocument::OWNER_DRIVER ? 'vozača' : 'vozilo';
 
         return sprintf(
-            'Dokument "%s" za %s "%s" istice za %d dana, na datum %s.',
+            '"%s" za %s "%s" ističe %s, na datum %s.',
             $this->formatDocumentType($document->getType()),
             $ownerType,
             $document->getOwnerLabel(),
-            $daysBefore,
+            $daysBefore === 1 ? 'sutra' : sprintf('za %d dana', $daysBefore),
             $document->getValidUntil()->format('d.m.Y'),
+        );
+    }
+
+    private function buildSubject(FleetDocument $document, int $daysBefore): string
+    {
+        $prefix = match ($daysBefore) {
+            1 => 'Hitno',
+            7 => 'Upozorenje',
+            default => 'Podsjetnik',
+        };
+        $expiry = $daysBefore === 1 ? 'ističe sutra' : sprintf('ističe za %d dana', $daysBefore);
+
+        return sprintf(
+            '%s: %s za %s %s',
+            $prefix,
+            $this->formatDocumentType($document->getType()),
+            $document->getOwnerLabel(),
+            $expiry,
         );
     }
 
@@ -127,12 +145,12 @@ class SendDocumentExpiryNotificationsCommand extends Command
             'periodic_inspection_6_months' => 'Periodični tehnički 6 mjeseci',
             'insurance' => 'Osiguranje',
             'attest' => 'Atest',
-            'driving_licence' => 'Vozacka dozvola',
+            'driving_licence' => 'Vozačka dozvola',
             'driver_card' => 'Kartica vozača - taho kartica',
             'medical_certificate' => 'Ljekarsko uvjerenje',
             'licence' => 'Licenca',
-            'fire_extinguisher' => 'Protupozarni aparat',
-            'first_aid' => 'Prva pomoc',
+            'fire_extinguisher' => 'Protupožarni aparat',
+            'first_aid' => 'Prva pomoć',
             'service' => 'Servis',
             'contract' => 'Ugovor',
             default => 'Ostalo',

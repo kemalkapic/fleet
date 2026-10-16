@@ -78,11 +78,17 @@
     {{ form_start(form, {attr: {class: 'space-y-3'}}) }}
         <div class="document-form-layout">
             <div class="document-form-fields">
-                <div>
-                    {{ form_label(form.ownerType, null, {label_attr: {class: field_label_class}}) }}
-                    {{ form_widget(form.ownerType, {attr: {class: field_input_class, 'data-document-owner-type': '1'}}) }}
-                    {{ form_errors(form.ownerType) }}
-                </div>
+                {% if not form.ownerType.vars.disabled %}
+                    <div>
+                        {{ form_label(form.ownerType, null, {label_attr: {class: field_label_class}}) }}
+                        {{ form_widget(form.ownerType, {attr: {class: field_input_class, 'data-document-owner-type': '1'}}) }}
+                        {{ form_errors(form.ownerType) }}
+                    </div>
+                {% else %}
+                    <div class="hidden">
+                        {{ form_widget(form.ownerType, {attr: {'data-document-owner-type': '1'}}) }}
+                    </div>
+                {% endif %}
 
                 <div>
                     {{ form_label(form.type, null, {label_attr: {class: field_label_class}}) }}
