@@ -22,13 +22,13 @@ class Company
     private string $status = 'active';
 
     #[ORM\Column(nullable: true)]
-    private ?int $vehicleLimit = null;
+    private ?int $vehicleLimit = 5;
 
     #[ORM\Column(nullable: true)]
-    private ?int $driverLimit = null;
+    private ?int $driverLimit = 5;
 
     #[ORM\Column(nullable: true)]
-    private ?int $documentLimit = null;
+    private ?int $documentLimit = 10;
 
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;

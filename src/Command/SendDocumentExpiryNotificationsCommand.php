@@ -121,9 +121,14 @@ class SendDocumentExpiryNotificationsCommand extends Command
     private function formatDocumentType(string $type): string
     {
         return match ($type) {
-            'registration' => 'Tehnicki pregled',
+            'registration' => 'Registracija',
+            'periodic_inspection_3_months' => 'Periodički tehnički 3 mjeseca',
+            'periodic_inspection_4_months' => 'Periodični tehnički 4 mjeseca',
+            'periodic_inspection_6_months' => 'Periodični tehnički 6 mjeseci',
             'insurance' => 'Osiguranje',
+            'attest' => 'Atest',
             'driving_licence' => 'Vozacka dozvola',
+            'driver_card' => 'Kartica vozača - taho kartica',
             'medical_certificate' => 'Ljekarsko uvjerenje',
             'licence' => 'Licenca',
             'fire_extinguisher' => 'Protupozarni aparat',

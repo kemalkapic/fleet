@@ -68,26 +68,35 @@ class FleetDocumentController extends AbstractController
 
         $document = (new FleetDocument())->setCompany($company);
         $vehicleId = $request->query->getInt('vehicle');
+        $driverId = $request->query->getInt('driver');
+
+        if (($vehicleId > 0) === ($driverId > 0)) {
+            $this->addFlash('error', 'Novu evidenciju dodajte iz profila vozila ili vozača.');
+
+            return $this->redirectToRoute('document_index');
+        }
 
         if ($vehicleId > 0) {
             $vehicle = $vehicles->findOneForCompany($vehicleId, $company);
 
-            if ($vehicle instanceof Vehicle) {
-                $document->setVehicle($vehicle);
+            if (!$vehicle instanceof Vehicle) {
+                throw new NotFoundHttpException();
             }
-        }
 
-        $driverId = $request->query->getInt('driver');
+            $document->setVehicle($vehicle);
+        }
 
         if ($driverId > 0) {
             $driver = $drivers->findOneForCompany($driverId, $company);
 
-            if ($driver instanceof Driver) {
-                $document->setDriver($driver);
+            if (!$driver instanceof Driver) {
+                throw new NotFoundHttpException();
             }
+
+            $document->setDriver($driver);
         }
 
-        $form = $this->createDocumentForm($document, $company, $vehicles, $drivers);
+        $form = $this->createDocumentForm($document, $company, $vehicles, $drivers, true);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid() && $this->applyOwner($document, (string) $form->get('ownerType')->getData())) {
@@ -146,7 +155,7 @@ class FleetDocumentController extends AbstractController
             throw new NotFoundHttpException();
         }
 
-        $form = $this->createDocumentForm($document, $company, $vehicles, $drivers);
+        $form = $this->createDocumentForm($document, $company, $vehicles, $drivers, true);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid() && $this->applyOwner($document, (string) $form->get('ownerType')->getData())) {
@@ -284,10 +293,12 @@ class FleetDocumentController extends AbstractController
         Company $company,
         VehicleRepository $vehicles,
         DriverRepository $drivers,
+        bool $lockOwner = false,
     ): \Symfony\Component\Form\FormInterface {
         return $this->createForm(FleetDocumentType::class, $document, [
             'vehicles' => $vehicles->findForCompany($company),
             'drivers' => $drivers->findForCompany($company),
+            'lock_owner' => $lockOwner,
         ]);
     }
 

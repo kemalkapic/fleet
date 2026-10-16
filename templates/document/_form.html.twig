@@ -86,7 +86,7 @@
 
                 <div>
                     {{ form_label(form.type, null, {label_attr: {class: field_label_class}}) }}
-                    {{ form_widget(form.type, {attr: {class: field_input_class}}) }}
+                    {{ form_widget(form.type, {attr: {class: field_input_class, 'data-document-type': '1'}}) }}
                     {{ form_errors(form.type) }}
                 </div>
 
@@ -157,17 +157,54 @@
 <script>
     (() => {
         const ownerType = document.querySelector('[data-document-owner-type]');
+        const typeSelect = document.querySelector('[data-document-type]');
         const vehicleField = document.querySelector('[data-document-owner-field="vehicle"]');
         const driverField = document.querySelector('[data-document-owner-field="driver"]');
 
-        if (!ownerType || !vehicleField || !driverField) {
+        if (!ownerType || !typeSelect || !vehicleField || !driverField) {
             return;
         }
+
+        const typeOptions = {
+            vehicle: [
+                ['Registracija', 'registration'],
+                ['Periodički tehnički 3 mjeseca', 'periodic_inspection_3_months'],
+                ['Periodični tehnički 4 mjeseca', 'periodic_inspection_4_months'],
+                ['Periodični tehnički 6 mjeseci', 'periodic_inspection_6_months'],
+                ['Licenca', 'licence'],
+                ['Atest', 'attest'],
+                ['Protupožarni aparat', 'fire_extinguisher'],
+                ['Prva pomoć', 'first_aid'],
+                ['Servis', 'service'],
+                ['Ostalo', 'other'],
+            ],
+            driver: [
+                ['Vozačka dozvola', 'driving_licence'],
+                ['Kartica vozača - taho kartica', 'driver_card'],
+                ['Ljekarsko uvjerenje', 'medical_certificate'],
+                ['Licenca', 'licence'],
+                ['Ugovor', 'contract'],
+                ['Ostalo', 'other'],
+            ],
+        };
+
+        const initialType = typeSelect.value;
+        const initialTypeLabel = typeSelect.selectedOptions[0]?.textContent?.trim() || initialType;
+        let firstSync = true;
 
         const syncOwnerFields = () => {
             const isDriver = ownerType.value === 'driver';
             vehicleField.style.display = isDriver ? 'none' : '';
             driverField.style.display = isDriver ? '' : 'none';
+
+            const selectedType = firstSync ? initialType : typeSelect.value;
+            const options = [...typeOptions[isDriver ? 'driver' : 'vehicle']];
+            if (firstSync && selectedType && !options.some(([, value]) => value === selectedType)) {
+                options.push([initialTypeLabel, selectedType]);
+            }
+
+            typeSelect.replaceChildren(...options.map(([label, value]) => new Option(label, value, false, value === selectedType)));
+            firstSync = false;
         };
 
         ownerType.addEventListener('change', syncOwnerFields);

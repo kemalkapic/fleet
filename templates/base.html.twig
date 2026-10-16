@@ -63,7 +63,10 @@
                                     </span>
                                     <span class="header-user-name max-w-[240px] truncate text-sm font-medium text-black dark:text-white">{{ app.user.fullName ?: app.user.userIdentifier }}</span>
                                     <a href="{{ path('app_logout') }}" class="inline-flex items-center justify-center rounded size-10 text-danger bg-danger/10 hover:bg-danger hover:text-white" title="Odjava" aria-label="Odjava">
-                                        <span class="text-2xl font-semibold leading-none" aria-hidden="true">&#x23FB;</span>
+                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M12 3v9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                            <path d="M6.4 5.6a8 8 0 1 0 11.2 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                        </svg>
                                     </a>
                                 {% else %}
                                     <span class="hidden text-sm text-muted sm:inline">MVP temelj</span>

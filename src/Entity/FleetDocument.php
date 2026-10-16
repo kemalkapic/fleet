@@ -143,9 +143,14 @@ class FleetDocument
     public function getTypeLabel(): string
     {
         return match ($this->type) {
-            'registration' => 'Tehnički pregled',
+            'registration' => 'Registracija',
+            'periodic_inspection_3_months' => 'Periodički tehnički 3 mjeseca',
+            'periodic_inspection_4_months' => 'Periodični tehnički 4 mjeseca',
+            'periodic_inspection_6_months' => 'Periodični tehnički 6 mjeseci',
             'insurance' => 'Osiguranje',
+            'attest' => 'Atest',
             'driving_licence' => 'Vozačka dozvola',
+            'driver_card' => 'Kartica vozača - taho kartica',
             'medical_certificate' => 'Ljekarsko uvjerenje',
             'licence' => 'Licenca',
             'fire_extinguisher' => 'Protupožarni aparat',

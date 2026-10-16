@@ -27,6 +27,7 @@ class FleetDocumentType extends AbstractType
             ->add('ownerType', ChoiceType::class, [
                 'label' => 'Dokument se odnosi na',
                 'mapped' => false,
+                'disabled' => $options['lock_owner'],
                 'choices' => [
                     'Vozilo' => FleetDocument::OWNER_VEHICLE,
                     'Vozača' => FleetDocument::OWNER_DRIVER,
@@ -40,6 +41,7 @@ class FleetDocumentType extends AbstractType
                 'choice_label' => static fn (Vehicle $vehicle): string => trim($vehicle->getRegistrationNumber().' '.$vehicle->getManufacturer().' '.$vehicle->getModel()),
                 'placeholder' => 'Odaberite vozilo',
                 'required' => false,
+                'disabled' => $options['lock_owner'],
             ])
             ->add('driver', EntityType::class, [
                 'label' => 'Vozač',
@@ -48,13 +50,19 @@ class FleetDocumentType extends AbstractType
                 'choice_label' => static fn (Driver $driver): string => $driver->getFullName(),
                 'placeholder' => 'Odaberite vozača',
                 'required' => false,
+                'disabled' => $options['lock_owner'],
             ])
             ->add('type', ChoiceType::class, [
                 'label' => 'Tip dokumenta',
                 'choices' => [
-                    'Tehnički pregled' => 'registration',
+                    'Registracija' => 'registration',
+                    'Periodički tehnički 3 mjeseca' => 'periodic_inspection_3_months',
+                    'Periodični tehnički 4 mjeseca' => 'periodic_inspection_4_months',
+                    'Periodični tehnički 6 mjeseci' => 'periodic_inspection_6_months',
                     'Osiguranje' => 'insurance',
+                    'Atest' => 'attest',
                     'Vozačka dozvola' => 'driving_licence',
+                    'Kartica vozača - taho kartica' => 'driver_card',
                     'Ljekarsko uvjerenje' => 'medical_certificate',
                     'Licenca' => 'licence',
                     'Protupožarni aparat' => 'fire_extinguisher',
@@ -107,6 +115,9 @@ class FleetDocumentType extends AbstractType
             'data_class' => FleetDocument::class,
             'vehicles' => [],
             'drivers' => [],
+            'lock_owner' => false,
         ]);
+
+        $resolver->setAllowedTypes('lock_owner', 'bool');
     }
 }

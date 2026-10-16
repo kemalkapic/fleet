@@ -1,14 +1,14 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Novi dokument | {{ app_name }}{% endblock %}
-{% block page_title %}Novi dokument{% endblock %}
+{% block title %}Nova evidencija | {{ app_name }}{% endblock %}
+{% block page_title %}Nova evidencija{% endblock %}
 
 {% block body %}
-    <a href="{{ path('document_index') }}" class="mb-4 inline-flex text-sm text-muted">Nazad na dokumente</a>
+    <a href="{{ path('document_index') }}" class="mb-4 inline-flex text-sm text-muted">Nazad na evidencije i rokove</a>
 
     {% include 'document/_form_theme.html.twig' with {
-        title: 'Novi dokument',
-        description: 'Unesite rok važenja i odaberite vozilo ili vozača na kojeg se dokument odnosi.',
-        button_label: 'Sačuvaj dokument'
+        title: 'Nova evidencija',
+        description: 'Unesite podatke i rok važenja evidencije za odabrano vozilo ili vozača.',
+        button_label: 'Sačuvaj evidenciju'
     } %}
 {% endblock %}

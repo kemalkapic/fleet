@@ -1,14 +1,14 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Uredi dokument | {{ app_name }}{% endblock %}
-{% block page_title %}Uredi dokument{% endblock %}
+{% block title %}Uredi evidenciju | {{ app_name }}{% endblock %}
+{% block page_title %}Uredi evidenciju{% endblock %}
 
 {% block body %}
-    <a href="{{ path('document_index') }}" class="mb-4 inline-flex text-sm text-muted">Nazad na dokumente</a>
+    <a href="{{ path('document_index') }}" class="mb-4 inline-flex text-sm text-muted">Nazad na evidencije i rokove</a>
 
     {% include 'document/_form_theme.html.twig' with {
-        title: 'Uredi dokument',
-        description: 'Ažurirajte rok važenja, vezu dokumenta i opcionalni prilog.',
+        title: 'Uredi evidenciju',
+        description: 'Ažurirajte podatke, rok važenja i opcionalni prilog.',
         button_label: 'Sačuvaj izmjene'
     } %}
 {% endblock %}
