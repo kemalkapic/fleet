@@ -75,6 +75,27 @@ class FleetDocumentRepository extends ServiceEntityRepository
     /**
      * @return list<FleetDocument>
      */
+    public function findExpiringBetweenForCompany(
+        Company $company,
+        \DateTimeImmutable $from,
+        \DateTimeImmutable $toExclusive,
+    ): array {
+        return $this->createQueryBuilder('document')
+            ->andWhere('document.company = :company')
+            ->andWhere('document.deletedAt IS NULL')
+            ->andWhere('document.validUntil >= :from')
+            ->andWhere('document.validUntil < :to')
+            ->setParameter('company', $company)
+            ->setParameter('from', $from)
+            ->setParameter('to', $toExclusive)
+            ->orderBy('document.validUntil', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<FleetDocument>
+     */
     public function findUpcomingForCompany(Company $company, \DateTimeImmutable $today, int $limit = 10): array
     {
         return $this->createQueryBuilder('document')

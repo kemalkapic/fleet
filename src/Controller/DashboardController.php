@@ -27,6 +27,33 @@ class DashboardController extends AbstractController
         $company = $tenantContext->getCompany();
         $today = new \DateTimeImmutable('today');
         $next30Days = $today->modify('+30 days');
+        $chartStart = $today->modify('first day of this month');
+        $chartEnd = $chartStart->modify('+6 months');
+        $monthNames = [
+            1 => 'Jan',
+            2 => 'Feb',
+            3 => 'Mar',
+            4 => 'Apr',
+            5 => 'Maj',
+            6 => 'Jun',
+            7 => 'Jul',
+            8 => 'Aug',
+            9 => 'Sep',
+            10 => 'Okt',
+            11 => 'Nov',
+            12 => 'Dec',
+        ];
+        $expiryChartLabels = [];
+        $expiryChartValues = [];
+        $expiryChartIndexes = [];
+
+        for ($monthOffset = 0; $monthOffset < 6; ++$monthOffset) {
+            $month = $chartStart->modify(sprintf('+%d months', $monthOffset));
+            $key = $month->format('Y-m');
+            $expiryChartIndexes[$key] = $monthOffset;
+            $expiryChartLabels[] = sprintf('%s %s', $monthNames[(int) $month->format('n')], $month->format('Y'));
+            $expiryChartValues[] = 0;
+        }
 
         $stats = [
             'companies' => $companies->count([]),
@@ -57,6 +84,14 @@ class DashboardController extends AbstractController
             $upcomingDocuments = $documents->findUpcomingForCompany($company, $today, 10);
             $expiredDocuments = $documents->findExpiredForCompany($company, $today, 10);
             $latestNotifications = $notifications->findLatestForCompanyLimited($company, 3);
+
+            foreach ($documents->findExpiringBetweenForCompany($company, $today, $chartEnd) as $document) {
+                $monthIndex = $expiryChartIndexes[$document->getValidUntil()->format('Y-m')] ?? null;
+
+                if ($monthIndex !== null) {
+                    ++$expiryChartValues[$monthIndex];
+                }
+            }
         }
 
         return $this->render('dashboard/overview.html.twig', [
@@ -65,6 +100,8 @@ class DashboardController extends AbstractController
             'upcoming_documents' => $upcomingDocuments,
             'expired_documents' => $expiredDocuments,
             'latest_notifications' => $latestNotifications,
+            'expiry_chart_labels' => $expiryChartLabels,
+            'expiry_chart_values' => $expiryChartValues,
         ]);
     }
 }
