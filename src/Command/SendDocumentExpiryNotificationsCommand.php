@@ -150,7 +150,7 @@ class SendDocumentExpiryNotificationsCommand extends Command
             $this->formatDocumentType($document->getType()),
             $ownerType,
             $document->getOwnerLabel(),
-            $daysBefore === 1 ? 'sutra' : sprintf('za %d dana', $daysBefore),
+            $daysBefore === 1 ? 'za 1 dan' : sprintf('za %d dana', $daysBefore),
             $document->getValidUntil()->format('d.m.Y'),
         );
     }
@@ -162,7 +162,7 @@ class SendDocumentExpiryNotificationsCommand extends Command
             7 => 'Upozorenje',
             default => 'Podsjetnik',
         };
-        $expiry = $daysBefore === 1 ? 'ističe sutra' : sprintf('ističe za %d dana', $daysBefore);
+        $expiry = $daysBefore === 1 ? 'ističe za 1 dan' : sprintf('ističe za %d dana', $daysBefore);
 
         return sprintf(
             '%s: %s za %s %s',

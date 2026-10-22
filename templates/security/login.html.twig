@@ -6,6 +6,7 @@
         <title>Prijava | {{ app_name }}</title>
         <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
         <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/remixicon.css') }}">
         <style>
             body.login-body {
                 background: #ffffff;
@@ -151,6 +152,37 @@
                 height: auto;
             }
 
+            .login-contact-links {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            .login-contact-links a {
+                display: inline-flex;
+                width: 30px;
+                height: 30px;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid #e5e7eb;
+                border-radius: 50%;
+                background: #ffffff;
+                font-size: 17px;
+                transition: border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+            }
+
+            .login-contact-links a:hover {
+                transform: translateY(-1px);
+            }
+
+            .login-contact-phone { color: #111827; }
+            .login-contact-phone:hover { border-color: #111827; }
+            .login-contact-whatsapp { color: #16a34a; }
+            .login-contact-whatsapp:hover { border-color: #16a34a; }
+            .login-contact-viber { color: #7360f2; }
+            .login-contact-viber:hover { border-color: #7360f2; }
+
             @media (max-width: 991px) {
                 .login-body main {
                     display: block;
@@ -268,9 +300,10 @@
             </section>
         </main>
         <footer class="fixed bottom-0 left-0 right-0 z-40 border-t border-black/10 bg-white px-4 py-3 text-xs text-muted">
-            <div class="mx-auto flex max-w-7xl flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <div class="mx-auto grid max-w-7xl gap-1 text-center sm:grid-cols-3 sm:items-center">
                 <span>&copy; {{ 'now'|date('Y') }} {{ app_name }}. Sva prava zadržana.</span>
-                <span>Izrađeno za upravljanje voznim parkom.</span>
+                {% include 'components/contact_links.html.twig' %}
+                <span class="sm:text-right">Izrađeno za upravljanje voznim parkom.</span>
             </div>
         </footer>
     </body>

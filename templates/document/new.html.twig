@@ -8,7 +8,9 @@
 
     {% include 'document/_form_theme.html.twig' with {
         title: 'Nova evidencija',
-        description: 'Unesite podatke i rok važenja evidencije za odabrano vozilo ili vozača.',
+        description: document.driver
+            ? 'Unesite podatke i rok važenja evidencije za odabranog vozača.'
+            : 'Unesite podatke i rok važenja evidencije za odabrano vozilo.',
         button_label: 'Sačuvaj evidenciju'
     } %}
 {% endblock %}

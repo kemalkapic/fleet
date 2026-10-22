@@ -18,10 +18,40 @@ use Symfony\Component\Validator\Constraints\File;
 
 class FleetDocumentType extends AbstractType
 {
+    private const VEHICLE_TYPE_CHOICES = [
+        'Registracija' => 'registration',
+        'Periodički tehnički 3 mjeseca' => 'periodic_inspection_3_months',
+        'Periodični tehnički 4 mjeseca' => 'periodic_inspection_4_months',
+        'Periodični tehnički 6 mjeseci' => 'periodic_inspection_6_months',
+        'Licenca' => 'licence',
+        'Atest' => 'attest',
+        'Protupožarni aparat' => 'fire_extinguisher',
+        'Prva pomoć' => 'first_aid',
+        'Servis' => 'service',
+        'Ostalo' => 'other',
+    ];
+
+    private const DRIVER_TYPE_CHOICES = [
+        'Vozačka dozvola' => 'driving_licence',
+        'Kartica vozača - taho kartica' => 'driver_card',
+        'Ljekarsko uvjerenje' => 'medical_certificate',
+        'Licenca' => 'licence',
+        'Ugovor' => 'contract',
+        'Ostalo' => 'other',
+    ];
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         /** @var FleetDocument|null $document */
         $document = $options['data'] ?? null;
+        $ownerType = $document instanceof FleetDocument ? $document->getOwnerType() : FleetDocument::OWNER_VEHICLE;
+        $typeChoices = $options['lock_owner']
+            ? ($ownerType === FleetDocument::OWNER_DRIVER ? self::DRIVER_TYPE_CHOICES : self::VEHICLE_TYPE_CHOICES)
+            : array_merge(self::VEHICLE_TYPE_CHOICES, self::DRIVER_TYPE_CHOICES);
+
+        if ($options['lock_owner'] && $ownerType === FleetDocument::OWNER_VEHICLE && $document?->getType() === 'insurance') {
+            $typeChoices['Osiguranje'] = 'insurance';
+        }
 
         $builder
             ->add('ownerType', ChoiceType::class, [
@@ -32,7 +62,7 @@ class FleetDocumentType extends AbstractType
                     'Vozilo' => FleetDocument::OWNER_VEHICLE,
                     'Vozača' => FleetDocument::OWNER_DRIVER,
                 ],
-                'data' => $document instanceof FleetDocument ? $document->getOwnerType() : FleetDocument::OWNER_VEHICLE,
+                'data' => $ownerType,
             ])
             ->add('vehicle', EntityType::class, [
                 'label' => 'Vozilo',
@@ -54,23 +84,7 @@ class FleetDocumentType extends AbstractType
             ])
             ->add('type', ChoiceType::class, [
                 'label' => 'Tip dokumenta',
-                'choices' => [
-                    'Registracija' => 'registration',
-                    'Periodički tehnički 3 mjeseca' => 'periodic_inspection_3_months',
-                    'Periodični tehnički 4 mjeseca' => 'periodic_inspection_4_months',
-                    'Periodični tehnički 6 mjeseci' => 'periodic_inspection_6_months',
-                    'Osiguranje' => 'insurance',
-                    'Atest' => 'attest',
-                    'Vozačka dozvola' => 'driving_licence',
-                    'Kartica vozača - taho kartica' => 'driver_card',
-                    'Ljekarsko uvjerenje' => 'medical_certificate',
-                    'Licenca' => 'licence',
-                    'Protupožarni aparat' => 'fire_extinguisher',
-                    'Prva pomoć' => 'first_aid',
-                    'Servis' => 'service',
-                    'Ugovor' => 'contract',
-                    'Ostalo' => 'other',
-                ],
+                'choices' => $typeChoices,
             ])
             ->add('documentNumber', TextType::class, [
                 'label' => 'Broj dokumenta',
