@@ -72,6 +72,69 @@
             stroke: currentColor;
         }
 
+        .dashboard-section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.875rem;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        .dashboard-section-icon {
+            display: inline-flex;
+            width: 2.5rem;
+            height: 2.5rem;
+            flex: 0 0 2.5rem;
+            align-items: center;
+            justify-content: center;
+            border-radius: 7px;
+            font-size: 1.25rem;
+        }
+
+        .dashboard-section-icon-upcoming {
+            color: #2563eb;
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .dashboard-section-icon-expired {
+            color: #dc2626;
+            background: rgba(220, 38, 38, 0.1);
+        }
+
+        .dashboard-section-icon-notifications {
+            color: #059669;
+            background: rgba(5, 150, 105, 0.1);
+        }
+
+        .dashboard-section-icon-chart {
+            color: #7c3aed;
+            background: rgba(124, 58, 237, 0.1);
+        }
+
+        .dashboard-section-title {
+            margin: 0;
+            color: #111827;
+            font-size: 0.9375rem;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .dashboard-section-description {
+            margin-top: 0.1875rem;
+            color: #6b7280;
+            font-size: 0.8125rem;
+            line-height: 1.35;
+        }
+
+        .dark .dashboard-section-header {
+            border-bottom-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .dark .dashboard-section-title {
+            color: #ffffff;
+        }
+
         .dashboard-stat-card,
         [data-dashboard-document-url] {
             transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
@@ -251,10 +314,13 @@
 
     <div class="dashboard-main-grid mt-4">
         <section class="dashboard-upcoming-section p-4 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10 sm:p-5">
-            <div class="mb-5">
-                <div>
-                    <h2 class="text-base font-semibold text-black dark:text-white">Nadolazeća upozorenja</h2>
-                    <p class="text-sm text-muted">Dokumenti koji najbliže ističu.</p>
+            <div class="dashboard-section-header">
+                <span class="dashboard-section-icon dashboard-section-icon-upcoming" aria-hidden="true">
+                    <i class="ri-alarm-warning-line"></i>
+                </span>
+                <div class="min-w-0">
+                    <h2 class="dashboard-section-title">Nadolazeća upozorenja</h2>
+                    <p class="dashboard-section-description">Evidencije koje najbliže ističu.</p>
                 </div>
             </div>
 
@@ -291,9 +357,14 @@
         </section>
 
         <section class="dashboard-expired-section p-4 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10 sm:p-5">
-            <div class="mb-5">
-                <h2 class="text-base font-semibold text-black dark:text-white">Istekli dokumenti</h2>
-                <p class="text-sm text-muted">Dokumenti koje treba produžiti u sistemu.</p>
+            <div class="dashboard-section-header">
+                <span class="dashboard-section-icon dashboard-section-icon-expired" aria-hidden="true">
+                    <i class="ri-file-warning-line"></i>
+                </span>
+                <div class="min-w-0">
+                    <h2 class="dashboard-section-title">Istekli dokumenti</h2>
+                    <p class="dashboard-section-description">Evidencije koje treba produžiti u sistemu.</p>
+                </div>
             </div>
 
             <div class="space-y-3{{ expired_documents|length > 3 ? ' dashboard-expired-scroll' : '' }}">
@@ -335,8 +406,16 @@
     </div>
 
     <section class="mt-4 p-4 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10 sm:p-5">
-        <h2 class="text-base font-semibold text-black dark:text-white">Zadnje notifikacije</h2>
-        <div class="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
+        <div class="dashboard-section-header">
+            <span class="dashboard-section-icon dashboard-section-icon-notifications" aria-hidden="true">
+                <i class="ri-notification-line"></i>
+            </span>
+            <div class="min-w-0">
+                <h2 class="dashboard-section-title">Zadnje notifikacije</h2>
+                <p class="dashboard-section-description">Posljednje evidentirane email obavijesti.</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 gap-3 lg:grid-cols-3">
             {% for notification in latest_notifications %}
                 <article class="rounded border border-black/10 p-3 dark:border-darkborder">
                     <div class="flex items-center justify-between gap-3">
@@ -358,13 +437,17 @@
     </section>
 
     <section class="mt-4 p-4 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10 sm:p-5">
-        <div>
-            <h2 class="text-base font-semibold text-black dark:text-white">Rokovi u narednih 6 mjeseci</h2>
-            <p class="mt-1 text-sm text-muted">Broj evidencija koje ističu po mjesecima.</p>
+        <div class="dashboard-section-header">
+            <span class="dashboard-section-icon dashboard-section-icon-chart" aria-hidden="true">
+                <i class="ri-bar-chart-line"></i>
+            </span>
+            <div class="min-w-0">
+                <h2 class="dashboard-section-title">Rokovi u narednih 6 mjeseci</h2>
+                <p class="dashboard-section-description">Broj evidencija koje ističu po mjesecima.</p>
+            </div>
         </div>
         <div
             id="document-expiry-chart"
-            class="mt-4"
             style="min-height: 280px;"
             data-chart-labels="{{ expiry_chart_labels|json_encode|e('html_attr') }}"
             data-chart-values="{{ expiry_chart_values|json_encode|e('html_attr') }}"
