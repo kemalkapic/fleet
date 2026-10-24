@@ -3,8 +3,8 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Prijava | {{ app_name }}</title>
-        <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
+        <title>{{ app_name }}</title>
+        {% include 'components/app_head.html.twig' %}
         <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
         <link rel="stylesheet" href="{{ asset('assets/css/remixicon.css') }}">
         <style>

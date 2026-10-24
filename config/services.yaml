@@ -1,6 +1,6 @@
 parameters:
     app.mail_from: 'noreply@kmmapps.com'
-    app.name: 'Vozi miško'
+    app.name: 'Vozi Miško'
 
 services:
     _defaults:
