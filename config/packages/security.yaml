@@ -23,6 +23,14 @@ security:
             logout:
                 path: app_logout
                 target: app_login
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 7776000
+                path: /
+                secure: auto
+                httponly: true
+                samesite: lax
+                always_remember_me: true
 
     role_hierarchy:
         ROLE_SUPER_ADMIN: [ROLE_COMPANY_ADMIN, ROLE_DRIVER]
