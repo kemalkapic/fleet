@@ -6,6 +6,7 @@ use App\Repository\CompanyRepository;
 use App\Repository\DriverRepository;
 use App\Repository\FleetDocumentRepository;
 use App\Repository\NotificationRepository;
+use App\Repository\UserRepository;
 use App\Repository\VehicleRepository;
 use App\Service\Tenant\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,6 +23,7 @@ class DashboardController extends AbstractController
         DriverRepository $drivers,
         FleetDocumentRepository $documents,
         NotificationRepository $notifications,
+        UserRepository $users,
     ): Response
     {
         $company = $tenantContext->getCompany();
@@ -55,6 +57,40 @@ class DashboardController extends AbstractController
             $expiryChartLabels[] = sprintf('%s %s', $monthNames[(int) $month->format('n')], $month->format('Y'));
             $expiryChartValues[] = 0;
             $expiryChartDetails[] = [];
+        }
+
+        if ($this->isGranted('ROLE_SUPER_ADMIN')) {
+            foreach ($documents->findPlatformExpiringBetween($today, $chartEnd) as $document) {
+                $monthIndex = $expiryChartIndexes[$document->getValidUntil()->format('Y-m')] ?? null;
+
+                if ($monthIndex !== null) {
+                    ++$expiryChartValues[$monthIndex];
+                    $expiryChartDetails[$monthIndex][] = [
+                        'type' => $document->getTypeLabel(),
+                        'company' => $document->getCompany()?->getName() ?? '-',
+                        'owner' => $document->getOwnerLabel(),
+                        'date' => $document->getValidUntil()->format('d.m.Y'),
+                    ];
+                }
+            }
+
+            $platformStats = [
+                'companies' => $companies->getPlatformStatusCounts(),
+                'vehicles' => $vehicles->getPlatformStatusCounts(),
+                'drivers' => $drivers->getPlatformStatusCounts(),
+                'users' => $users->getPlatformStatusCounts(),
+                'documents' => $documents->getPlatformStatusCounts($today),
+                'notifications' => $notifications->getPlatformStatusCounts(),
+            ];
+
+            return $this->render('dashboard/platform_overview.html.twig', [
+                'platform_stats' => $platformStats,
+                'platform_companies' => $companies->findPlatformSummaries(6),
+                'expiring_next_30_days' => $documents->countPlatformExpiringWithin($today, $next30Days),
+                'expiry_chart_labels' => $expiryChartLabels,
+                'expiry_chart_values' => $expiryChartValues,
+                'expiry_chart_details' => $expiryChartDetails,
+            ]);
         }
 
         $stats = [

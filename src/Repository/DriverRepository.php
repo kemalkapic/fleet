@@ -39,6 +39,26 @@ class DriverRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * @return array{total: int, active: int, inactive: int}
+     */
+    public function getPlatformStatusCounts(): array
+    {
+        $result = $this->createQueryBuilder('driver')
+            ->select('COUNT(driver.id) AS total')
+            ->addSelect("SUM(CASE WHEN driver.status = 'active' THEN 1 ELSE 0 END) AS active")
+            ->addSelect("SUM(CASE WHEN driver.status != 'active' THEN 1 ELSE 0 END) AS inactive")
+            ->andWhere('driver.deletedAt IS NULL')
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'total' => (int) $result['total'],
+            'active' => (int) $result['active'],
+            'inactive' => (int) $result['inactive'],
+        ];
+    }
+
     public function findOneForCompany(int $id, Company $company): ?Driver
     {
         return $this->findOneBy([

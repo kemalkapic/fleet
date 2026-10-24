@@ -23,6 +23,25 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return array{total: int, active: int, inactive: int}
+     */
+    public function getPlatformStatusCounts(): array
+    {
+        $result = $this->createQueryBuilder('user')
+            ->select('COUNT(user.id) AS total')
+            ->addSelect('SUM(CASE WHEN user.isActive = true THEN 1 ELSE 0 END) AS active')
+            ->addSelect('SUM(CASE WHEN user.isActive = false THEN 1 ELSE 0 END) AS inactive')
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'total' => (int) $result['total'],
+            'active' => (int) $result['active'],
+            'inactive' => (int) $result['inactive'],
+        ];
+    }
+
+    /**
      * @return list<User>
      */
     public function findActiveCompanyAdmins(Company $company): array

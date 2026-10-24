@@ -1,0 +1,522 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Kontrolna tabla | {{ app_name }}{% endblock %}
+
+{% block body %}
+    <style>
+        .platform-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .platform-stat-card {
+            min-width: 0;
+            padding: 1rem;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            border-radius: 8px;
+            background: #ffffff;
+            transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+        }
+
+        .platform-stat-card[href]:hover,
+        .platform-stat-card[href]:focus-visible {
+            border-color: rgba(106, 90, 249, 0.45);
+            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .platform-stat-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .platform-stat-icon {
+            display: inline-flex;
+            width: 2.5rem;
+            height: 2.5rem;
+            flex: 0 0 2.5rem;
+            align-items: center;
+            justify-content: center;
+            border-radius: 7px;
+            font-size: 1.25rem;
+        }
+
+        .platform-stat-value {
+            margin-top: 0.75rem;
+            color: #111827;
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .platform-stat-total-label {
+            margin-top: 0.25rem;
+            color: #6b7280;
+            font-size: 0.6875rem;
+            line-height: 1.2;
+        }
+
+        .platform-stat-breakdown {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.875rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        .platform-stat-breakdown span {
+            min-width: 0;
+            color: #6b7280;
+            font-size: 0.6875rem;
+            line-height: 1.3;
+        }
+
+        .platform-stat-breakdown strong {
+            display: block;
+            margin-bottom: 0.125rem;
+            color: #111827;
+            font-size: 0.875rem;
+        }
+
+        .platform-dashboard-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 1rem;
+        }
+
+        .platform-section {
+            min-width: 0;
+            padding: 1rem;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            border-radius: 8px;
+            background: #ffffff;
+        }
+
+        .platform-section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.875rem;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        .platform-section-icon {
+            display: inline-flex;
+            width: 2.5rem;
+            height: 2.5rem;
+            flex: 0 0 2.5rem;
+            align-items: center;
+            justify-content: center;
+            border-radius: 7px;
+            font-size: 1.25rem;
+        }
+
+        .platform-section-title {
+            color: #111827;
+            font-size: 0.9375rem;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .platform-section-description {
+            margin-top: 0.1875rem;
+            color: #6b7280;
+            font-size: 0.8125rem;
+            line-height: 1.35;
+        }
+
+        .platform-company-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) repeat(4, minmax(80px, 0.65fr));
+            gap: 0.75rem;
+            align-items: center;
+            padding: 0.875rem 0;
+            border-top: 1px solid rgba(15, 23, 42, 0.08);
+            transition: color 160ms ease, background-color 160ms ease;
+        }
+
+        .platform-company-row:first-child {
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        .platform-company-row:last-child {
+            padding-bottom: 0;
+        }
+
+        .platform-company-row:hover,
+        .platform-company-row:focus-visible {
+            color: rgb(106, 90, 249);
+            outline: none;
+        }
+
+        .platform-company-metric {
+            color: #6b7280;
+            font-size: 0.6875rem;
+        }
+
+        .platform-company-metric strong {
+            display: block;
+            margin-top: 0.125rem;
+            color: #111827;
+            font-size: 0.8125rem;
+        }
+
+        .platform-health-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.875rem 0;
+            border-top: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        .platform-health-row:first-child {
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        .platform-health-row:last-child {
+            padding-bottom: 0;
+        }
+
+        .dark .platform-stat-card,
+        .dark .platform-section {
+            border-color: rgba(255, 255, 255, 0.08);
+            background: rgb(35, 33, 50);
+        }
+
+        .dark .platform-stat-value,
+        .dark .platform-stat-breakdown strong,
+        .dark .platform-section-title,
+        .dark .platform-company-metric strong {
+            color: #ffffff;
+        }
+
+        .dark .platform-stat-breakdown,
+        .dark .platform-section-header,
+        .dark .platform-company-row,
+        .dark .platform-health-row {
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        @media (min-width: 1024px) {
+            .platform-stat-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .platform-dashboard-grid {
+                grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.75fr);
+            }
+        }
+
+        @media (max-width: 760px) {
+            .platform-company-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .platform-company-identity {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 430px) {
+            .platform-stat-grid {
+                gap: 0.75rem;
+            }
+
+            .platform-stat-card {
+                padding: 0.875rem;
+            }
+
+            .platform-stat-icon {
+                width: 2.25rem;
+                height: 2.25rem;
+                flex-basis: 2.25rem;
+                font-size: 1.125rem;
+            }
+
+            .platform-stat-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+
+    <div class="platform-stat-grid">
+        <a href="{{ path('platform_company_index') }}" class="platform-stat-card">
+            <div class="platform-stat-heading">
+                <p class="font-semibold text-black dark:text-white">Firme</p>
+                <span class="platform-stat-icon bg-info/10 text-info"><i class="ri-building-4-line"></i></span>
+            </div>
+            <p class="platform-stat-value">{{ platform_stats.companies.total }}</p>
+            <p class="platform-stat-total-label">Ukupno</p>
+            <div class="platform-stat-breakdown">
+                <span><strong class="text-success">{{ platform_stats.companies.active }}</strong>Aktivne</span>
+                <span><strong class="text-danger">{{ platform_stats.companies.inactive }}</strong>Neaktivne</span>
+            </div>
+        </a>
+
+        <div class="platform-stat-card">
+            <div class="platform-stat-heading">
+                <p class="font-semibold text-black dark:text-white">Vozila</p>
+                <span class="platform-stat-icon bg-purple/10 text-purple"><i class="ri-truck-line"></i></span>
+            </div>
+            <p class="platform-stat-value">{{ platform_stats.vehicles.total }}</p>
+            <p class="platform-stat-total-label">Ukupno</p>
+            <div class="platform-stat-breakdown">
+                <span><strong class="text-success">{{ platform_stats.vehicles.active }}</strong>Aktivna</span>
+                <span><strong class="text-danger">{{ platform_stats.vehicles.inactive }}</strong>Neaktivna</span>
+            </div>
+        </div>
+
+        <div class="platform-stat-card">
+            <div class="platform-stat-heading">
+                <p class="font-semibold text-black dark:text-white">Vozači</p>
+                <span class="platform-stat-icon bg-success/10 text-success"><i class="ri-user-3-line"></i></span>
+            </div>
+            <p class="platform-stat-value">{{ platform_stats.drivers.total }}</p>
+            <p class="platform-stat-total-label">Ukupno</p>
+            <div class="platform-stat-breakdown">
+                <span><strong class="text-success">{{ platform_stats.drivers.active }}</strong>Aktivni</span>
+                <span><strong class="text-danger">{{ platform_stats.drivers.inactive }}</strong>Neaktivni</span>
+            </div>
+        </div>
+
+        <a href="{{ path('platform_user_index') }}" class="platform-stat-card">
+            <div class="platform-stat-heading">
+                <p class="font-semibold text-black dark:text-white">Korisnici</p>
+                <span class="platform-stat-icon bg-warning/10 text-warning"><i class="ri-user-settings-line"></i></span>
+            </div>
+            <p class="platform-stat-value">{{ platform_stats.users.total }}</p>
+            <p class="platform-stat-total-label">Ukupno</p>
+            <div class="platform-stat-breakdown">
+                <span><strong class="text-success">{{ platform_stats.users.active }}</strong>Aktivni</span>
+                <span><strong class="text-danger">{{ platform_stats.users.inactive }}</strong>Neaktivni</span>
+            </div>
+        </a>
+
+        <div class="platform-stat-card">
+            <div class="platform-stat-heading">
+                <p class="font-semibold text-black dark:text-white">Evidencije</p>
+                <span class="platform-stat-icon bg-info/10 text-info"><i class="ri-file-list-3-line"></i></span>
+            </div>
+            <p class="platform-stat-value">{{ platform_stats.documents.total }}</p>
+            <p class="platform-stat-total-label">Ukupno</p>
+            <div class="platform-stat-breakdown">
+                <span><strong class="text-success">{{ platform_stats.documents.active }}</strong>Važeće</span>
+                <span><strong class="text-danger">{{ platform_stats.documents.inactive }}</strong>Istekle</span>
+            </div>
+        </div>
+
+        <div class="platform-stat-card">
+            <div class="platform-stat-heading">
+                <p class="font-semibold text-black dark:text-white">Notifikacije</p>
+                <span class="platform-stat-icon bg-danger/10 text-danger"><i class="ri-notification-3-line"></i></span>
+            </div>
+            <p class="platform-stat-value">{{ platform_stats.notifications.total }}</p>
+            <p class="platform-stat-total-label">Ukupno</p>
+            <div class="platform-stat-breakdown">
+                <span><strong class="text-success">{{ platform_stats.notifications.sent }}</strong>Poslane</span>
+                <span><strong class="text-danger">{{ platform_stats.notifications.failed }}</strong>Neuspjele</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="platform-dashboard-grid mt-4">
+        <section class="platform-section">
+            <div class="platform-section-header">
+                <span class="platform-section-icon bg-purple/10 text-purple"><i class="ri-building-line"></i></span>
+                <div class="min-w-0">
+                    <h2 class="platform-section-title">Pregled firmi</h2>
+                    <p class="platform-section-description">Posljednje dodane firme i korištenje njihovih limita.</p>
+                </div>
+            </div>
+
+            <div>
+                {% for company in platform_companies %}
+                    <a href="{{ path('platform_company_edit', {id: company.id}) }}" class="platform-company-row">
+                        <div class="platform-company-identity min-w-0">
+                            <div class="flex items-center gap-2">
+                                <p class="truncate font-semibold text-black dark:text-white">{{ company.name }}</p>
+                                {% if company.status == 'active' %}
+                                    <span class="rounded bg-success/10 px-2 py-1 text-[11px] font-semibold text-success">Aktivna</span>
+                                {% else %}
+                                    <span class="rounded bg-danger/10 px-2 py-1 text-[11px] font-semibold text-danger">Neaktivna</span>
+                                {% endif %}
+                            </div>
+                            <p class="mt-1 text-xs text-muted">Kreirana {{ company.created_at|date('d.m.Y') }}</p>
+                        </div>
+                        <div class="platform-company-metric">Vozila<strong>{{ company.vehicle_count }}/{{ company.vehicle_limit is not null ? company.vehicle_limit : '∞' }}</strong></div>
+                        <div class="platform-company-metric">Vozači<strong>{{ company.driver_count }}/{{ company.driver_limit is not null ? company.driver_limit : '∞' }}</strong></div>
+                        <div class="platform-company-metric">Evidencije<strong>{{ company.document_count }}/{{ company.document_limit is not null ? company.document_limit : '∞' }}</strong></div>
+                        <div class="platform-company-metric">Korisnici<strong>{{ company.user_count }}</strong></div>
+                    </a>
+                {% else %}
+                    <p class="py-6 text-center text-sm text-muted">Još nema kreiranih firmi.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="platform-section">
+            <div class="platform-section-header">
+                <span class="platform-section-icon bg-warning/10 text-warning"><i class="ri-pulse-line"></i></span>
+                <div class="min-w-0">
+                    <h2 class="platform-section-title">Operativni pregled</h2>
+                    <p class="platform-section-description">Stavke koje trenutno traže pažnju.</p>
+                </div>
+            </div>
+
+            <div>
+                <div class="platform-health-row">
+                    <div>
+                        <p class="font-medium text-black dark:text-white">Ističe u narednih 30 dana</p>
+                        <p class="mt-1 text-xs text-muted">Aktivni rokovi svih firmi</p>
+                    </div>
+                    <strong class="text-lg text-warning">{{ expiring_next_30_days }}</strong>
+                </div>
+                <div class="platform-health-row">
+                    <div>
+                        <p class="font-medium text-black dark:text-white">Istekle evidencije</p>
+                        <p class="mt-1 text-xs text-muted">Rokovi koje firme trebaju produžiti</p>
+                    </div>
+                    <strong class="text-lg text-danger">{{ platform_stats.documents.inactive }}</strong>
+                </div>
+                <div class="platform-health-row">
+                    <div>
+                        <p class="font-medium text-black dark:text-white">Neuspjele notifikacije</p>
+                        <p class="mt-1 text-xs text-muted">Poruke koje nisu uspješno poslane</p>
+                    </div>
+                    <strong class="text-lg text-danger">{{ platform_stats.notifications.failed }}</strong>
+                </div>
+                <div class="platform-health-row">
+                    <div>
+                        <p class="font-medium text-black dark:text-white">Aktivne firme</p>
+                        <p class="mt-1 text-xs text-muted">Firme s omogućenim pristupom</p>
+                    </div>
+                    <strong class="text-lg text-success">{{ platform_stats.companies.active }}</strong>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <section class="platform-section mt-4">
+        <div class="platform-section-header">
+            <span class="platform-section-icon bg-info/10 text-info"><i class="ri-bar-chart-line"></i></span>
+            <div class="min-w-0">
+                <h2 class="platform-section-title">Rokovi na platformi</h2>
+                <p class="platform-section-description">Evidencije svih firmi koje ističu u narednih 6 mjeseci.</p>
+            </div>
+        </div>
+        <div
+            id="platform-expiry-chart"
+            style="min-height: 280px;"
+            data-chart-labels="{{ expiry_chart_labels|json_encode|e('html_attr') }}"
+            data-chart-values="{{ expiry_chart_values|json_encode|e('html_attr') }}"
+            data-chart-details="{{ expiry_chart_details|json_encode|e('html_attr') }}"
+        ></div>
+        <div id="platform-expiry-details" class="mt-3 hidden rounded border border-black/10 bg-black/[0.02] p-3 dark:border-darkborder dark:bg-white/[0.03]"></div>
+    </section>
+
+    <script src="{{ asset('assets/js/apexcharts.js') }}"></script>
+    <script>
+        (() => {
+            const chartElement = document.querySelector('#platform-expiry-chart');
+
+            if (!chartElement || typeof ApexCharts === 'undefined') {
+                return;
+            }
+
+            const labels = JSON.parse(chartElement.dataset.chartLabels || '[]');
+            const values = JSON.parse(chartElement.dataset.chartValues || '[]');
+            const details = JSON.parse(chartElement.dataset.chartDetails || '[]');
+            const detailsElement = document.querySelector('#platform-expiry-details');
+            const escapeHtml = (value) => String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+            const detailsMarkup = (index, compact = false) => {
+                const monthItems = details[index] || [];
+                const title = labels[index] || '';
+
+                if (monthItems.length === 0) {
+                    return `<div class="px-3 py-2 text-sm text-muted">${escapeHtml(title)}: nema isteka.</div>`;
+                }
+
+                const rows = monthItems.map((item) => `
+                    <div class="${compact ? 'px-3 py-2' : 'py-2'} border-t border-black/10 first:border-t-0">
+                        <div class="font-semibold text-black">${escapeHtml(item.type)}</div>
+                        <div class="mt-1 text-xs text-muted">${escapeHtml(item.company)} &middot; ${escapeHtml(item.owner)} &middot; ${escapeHtml(item.date)}</div>
+                    </div>
+                `).join('');
+
+                return `<div class="${compact ? 'min-w-[240px]' : ''}">
+                    <div class="${compact ? 'px-3 py-2' : 'mb-1'} text-xs font-semibold uppercase text-muted">${escapeHtml(title)}</div>
+                    ${rows}
+                </div>`;
+            };
+
+            new ApexCharts(chartElement, {
+                chart: {
+                    type: 'bar',
+                    height: 300,
+                    fontFamily: 'inherit',
+                    toolbar: { show: false },
+                    events: {
+                        dataPointSelection: (event, chartContext, config) => {
+                            if (!detailsElement || config.dataPointIndex < 0) {
+                                return;
+                            }
+
+                            detailsElement.innerHTML = detailsMarkup(config.dataPointIndex);
+                            detailsElement.classList.remove('hidden');
+                        },
+                    },
+                },
+                series: [{ name: 'Evidencije', data: values }],
+                colors: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'],
+                plotOptions: {
+                    bar: { borderRadius: 4, columnWidth: '46%', distributed: true },
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: (value) => value > 0 ? value : '',
+                    style: { fontSize: '12px' },
+                },
+                legend: { show: false },
+                grid: { borderColor: '#e5e7eb', strokeDashArray: 4 },
+                xaxis: {
+                    categories: labels,
+                    labels: { rotate: -35, style: { colors: '#6b7280', fontSize: '12px' } },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                },
+                yaxis: {
+                    min: 0,
+                    forceNiceScale: true,
+                    labels: {
+                        formatter: (value) => Number.isInteger(value) ? value : '',
+                        style: { colors: '#6b7280' },
+                    },
+                },
+                tooltip: { custom: ({ dataPointIndex }) => detailsMarkup(dataPointIndex, true) },
+                responsive: [{
+                    breakpoint: 640,
+                    options: {
+                        chart: { height: 270 },
+                        plotOptions: { bar: { columnWidth: '58%' } },
+                    },
+                }],
+            }).render();
+        })();
+    </script>
+{% endblock %}

@@ -45,6 +45,55 @@ class FleetDocumentRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * @return array{total: int, active: int, inactive: int}
+     */
+    public function getPlatformStatusCounts(\DateTimeImmutable $today): array
+    {
+        $result = $this->createQueryBuilder('document')
+            ->select('COUNT(document.id) AS total')
+            ->addSelect('SUM(CASE WHEN document.validUntil >= :today THEN 1 ELSE 0 END) AS active')
+            ->addSelect('SUM(CASE WHEN document.validUntil < :today THEN 1 ELSE 0 END) AS inactive')
+            ->andWhere('document.deletedAt IS NULL')
+            ->setParameter('today', $today)
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'total' => (int) $result['total'],
+            'active' => (int) $result['active'],
+            'inactive' => (int) $result['inactive'],
+        ];
+    }
+
+    public function countPlatformExpiringWithin(\DateTimeImmutable $from, \DateTimeImmutable $to): int
+    {
+        return (int) $this->createQueryBuilder('document')
+            ->select('COUNT(document.id)')
+            ->andWhere('document.deletedAt IS NULL')
+            ->andWhere('document.validUntil BETWEEN :from AND :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * @return list<FleetDocument>
+     */
+    public function findPlatformExpiringBetween(\DateTimeImmutable $from, \DateTimeImmutable $toExclusive): array
+    {
+        return $this->createQueryBuilder('document')
+            ->andWhere('document.deletedAt IS NULL')
+            ->andWhere('document.validUntil >= :from')
+            ->andWhere('document.validUntil < :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $toExclusive)
+            ->orderBy('document.validUntil', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function countExpiredForCompany(Company $company, \DateTimeImmutable $today): int
     {
         return (int) $this->createQueryBuilder('document')

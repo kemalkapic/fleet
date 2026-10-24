@@ -46,6 +46,27 @@ class NotificationRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * @return array{total: int, sent: int, failed: int}
+     */
+    public function getPlatformStatusCounts(): array
+    {
+        $result = $this->createQueryBuilder('notification')
+            ->select('COUNT(notification.id) AS total')
+            ->addSelect('SUM(CASE WHEN notification.status = :sent THEN 1 ELSE 0 END) AS sent')
+            ->addSelect('SUM(CASE WHEN notification.status = :failed THEN 1 ELSE 0 END) AS failed')
+            ->setParameter('sent', Notification::STATUS_SENT)
+            ->setParameter('failed', Notification::STATUS_FAILED)
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'total' => (int) $result['total'],
+            'sent' => (int) $result['sent'],
+            'failed' => (int) $result['failed'],
+        ];
+    }
+
     public function findLatestForCompany(Company $company): ?Notification
     {
         return $this->createQueryBuilder('notification')

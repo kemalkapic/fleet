@@ -39,6 +39,26 @@ class VehicleRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * @return array{total: int, active: int, inactive: int}
+     */
+    public function getPlatformStatusCounts(): array
+    {
+        $result = $this->createQueryBuilder('vehicle')
+            ->select('COUNT(vehicle.id) AS total')
+            ->addSelect("SUM(CASE WHEN vehicle.status = 'active' THEN 1 ELSE 0 END) AS active")
+            ->addSelect("SUM(CASE WHEN vehicle.status != 'active' THEN 1 ELSE 0 END) AS inactive")
+            ->andWhere('vehicle.deletedAt IS NULL')
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'total' => (int) $result['total'],
+            'active' => (int) $result['active'],
+            'inactive' => (int) $result['inactive'],
+        ];
+    }
+
     public function findOneForCompany(int $id, Company $company): ?Vehicle
     {
         return $this->findOneBy([
