@@ -45,6 +45,7 @@ class DashboardController extends AbstractController
         ];
         $expiryChartLabels = [];
         $expiryChartValues = [];
+        $expiryChartDetails = [];
         $expiryChartIndexes = [];
 
         for ($monthOffset = 0; $monthOffset < 6; ++$monthOffset) {
@@ -53,6 +54,7 @@ class DashboardController extends AbstractController
             $expiryChartIndexes[$key] = $monthOffset;
             $expiryChartLabels[] = sprintf('%s %s', $monthNames[(int) $month->format('n')], $month->format('Y'));
             $expiryChartValues[] = 0;
+            $expiryChartDetails[] = [];
         }
 
         $stats = [
@@ -90,6 +92,11 @@ class DashboardController extends AbstractController
 
                 if ($monthIndex !== null) {
                     ++$expiryChartValues[$monthIndex];
+                    $expiryChartDetails[$monthIndex][] = [
+                        'type' => $document->getTypeLabel(),
+                        'owner' => $document->getOwnerLabel(),
+                        'date' => $document->getValidUntil()->format('d.m.Y'),
+                    ];
                 }
             }
         }
@@ -102,6 +109,7 @@ class DashboardController extends AbstractController
             'latest_notifications' => $latestNotifications,
             'expiry_chart_labels' => $expiryChartLabels,
             'expiry_chart_values' => $expiryChartValues,
+            'expiry_chart_details' => $expiryChartDetails,
         ]);
     }
 }

@@ -362,7 +362,15 @@
             <h2 class="text-base font-semibold text-black dark:text-white">Rokovi u narednih 6 mjeseci</h2>
             <p class="mt-1 text-sm text-muted">Broj evidencija koje ističu po mjesecima.</p>
         </div>
-        <div id="document-expiry-chart" class="mt-4" style="min-height: 280px;"></div>
+        <div
+            id="document-expiry-chart"
+            class="mt-4"
+            style="min-height: 280px;"
+            data-chart-labels="{{ expiry_chart_labels|json_encode|e('html_attr') }}"
+            data-chart-values="{{ expiry_chart_values|json_encode|e('html_attr') }}"
+            data-chart-details="{{ expiry_chart_details|json_encode|e('html_attr') }}"
+        ></div>
+        <div id="document-expiry-details" class="mt-3 hidden rounded border border-black/10 bg-black/[0.02] p-3 dark:border-darkborder dark:bg-white/[0.03]"></div>
     </section>
 
     <div class="dashboard-modal-backdrop" data-expiry-modal>
@@ -404,16 +412,57 @@
                 return;
             }
 
+            const chartLabels = JSON.parse(chartElement.dataset.chartLabels || '[]');
+            const chartValues = JSON.parse(chartElement.dataset.chartValues || '[]');
+            const chartDetails = JSON.parse(chartElement.dataset.chartDetails || '[]');
+            const detailsElement = document.querySelector('#document-expiry-details');
+            const escapeHtml = (value) => String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+            const detailsMarkup = (index, compact = false) => {
+                const items = chartDetails[index] || [];
+                const title = chartLabels[index] || '';
+
+                if (items.length === 0) {
+                    return `<div class="px-3 py-2 text-sm text-muted">${escapeHtml(title)}: nema isteka.</div>`;
+                }
+
+                const rows = items.map((item) => `
+                    <div class="${compact ? 'px-3 py-2' : 'py-2'} border-t border-black/10 first:border-t-0">
+                        <div class="font-semibold text-black">${escapeHtml(item.type)}</div>
+                        <div class="mt-1 text-xs text-muted">${escapeHtml(item.owner)} &middot; ${escapeHtml(item.date)}</div>
+                    </div>
+                `).join('');
+
+                return `<div class="${compact ? 'min-w-[220px]' : ''}">
+                    <div class="${compact ? 'px-3 py-2' : 'mb-1'} text-xs font-semibold uppercase text-muted">${escapeHtml(title)}</div>
+                    ${rows}
+                </div>`;
+            };
+
             const chart = new ApexCharts(chartElement, {
                 chart: {
                     type: 'bar',
                     height: 300,
                     fontFamily: 'inherit',
                     toolbar: { show: false },
+                    events: {
+                        dataPointSelection: (event, chartContext, config) => {
+                            if (!detailsElement || config.dataPointIndex < 0) {
+                                return;
+                            }
+
+                            detailsElement.innerHTML = detailsMarkup(config.dataPointIndex);
+                            detailsElement.classList.remove('hidden');
+                        },
+                    },
                 },
                 series: [{
                     name: 'Evidencije',
-                    data: {{ expiry_chart_values|json_encode|raw }},
+                    data: chartValues,
                 }],
                 colors: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'],
                 plotOptions: {
@@ -434,7 +483,7 @@
                     strokeDashArray: 4,
                 },
                 xaxis: {
-                    categories: {{ expiry_chart_labels|json_encode|raw }},
+                    categories: chartLabels,
                     labels: {
                         rotate: -35,
                         style: { colors: '#6b7280', fontSize: '12px' },
@@ -451,9 +500,7 @@
                     },
                 },
                 tooltip: {
-                    y: {
-                        formatter: (value) => `${value} evidencija`,
-                    },
+                    custom: ({ dataPointIndex }) => detailsMarkup(dataPointIndex, true),
                 },
                 responsive: [{
                     breakpoint: 640,
