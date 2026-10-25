@@ -12,7 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class DocumentExpiryNotifier
 {
-    private const THRESHOLDS = [15, 7, 1];
+    private const THRESHOLDS = [15, 7, 1, -1];
 
     public function __construct(
         private FleetDocumentRepository $documents,
@@ -29,7 +29,7 @@ final readonly class DocumentExpiryNotifier
         $skipped = 0;
 
         foreach (self::THRESHOLDS as $daysBefore) {
-            $expiryDate = $today->modify(sprintf('+%d days', $daysBefore));
+            $expiryDate = $today->modify(sprintf('%+d days', $daysBefore));
 
             foreach ($this->documents->findExpiringOn($expiryDate) as $document) {
                 $company = $document->getCompany();
@@ -139,6 +139,16 @@ final readonly class DocumentExpiryNotifier
     {
         $ownerType = $document->getOwnerType() === FleetDocument::OWNER_DRIVER ? 'vozača' : 'vozilo';
 
+        if ($daysBefore === -1) {
+            return sprintf(
+                'Rok za evidenciju "%s" za %s "%s" istekao je jučer, %s.',
+                $document->getTypeLabel(),
+                $ownerType,
+                $document->getOwnerLabel(),
+                $document->getValidUntil()->format('d.m.Y'),
+            );
+        }
+
         return sprintf(
             '"%s" za %s "%s" ističe %s, na datum %s.',
             $document->getTypeLabel(),
@@ -155,18 +165,21 @@ final readonly class DocumentExpiryNotifier
     private function buildBatchSubject(array $items): string
     {
         if (count($items) > 1) {
-            return sprintf('Pregled rokova: %d aktivna upozorenja', count($items));
+            return sprintf('Pregled rokova: %d upozorenja', count($items));
         }
 
         $item = $items[0];
         $prefix = match ($item['daysBefore']) {
+            -1 => 'Isteklo',
             1 => 'Hitno',
             7 => 'Upozorenje',
             default => 'Podsjetnik',
         };
-        $expiry = $item['daysBefore'] === 1
-            ? 'ističe za 1 dan'
-            : sprintf('ističe za %d dana', $item['daysBefore']);
+        $expiry = match ($item['daysBefore']) {
+            -1 => 'isteklo je jučer',
+            1 => 'ističe za 1 dan',
+            default => sprintf('ističe za %d dana', $item['daysBefore']),
+        };
 
         return sprintf(
             '%s: %s za %s %s',
@@ -186,9 +199,10 @@ final readonly class DocumentExpiryNotifier
             return $items[0]['message'];
         }
 
-        $lines = ['Evidencije kojima se približava istek:', ''];
+        $lines = ['Pregled evidencija i rokova:', ''];
         foreach ($items as $index => $item) {
             $priority = match ($item['daysBefore']) {
+                -1 => 'ISTEKLO',
                 1 => 'HITNO',
                 7 => 'UPOZORENJE',
                 default => 'PODSJETNIK',
