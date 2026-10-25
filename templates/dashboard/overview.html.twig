@@ -225,7 +225,7 @@
 
             .dashboard-upcoming-scroll,
             .dashboard-expired-scroll {
-                max-height: 590px;
+                max-height: 290px;
             }
         }
     </style>
@@ -324,7 +324,7 @@
                 </div>
             </div>
 
-            <div class="space-y-3{{ upcoming_documents|length > 3 ? ' dashboard-upcoming-scroll' : '' }}">
+            <div class="space-y-3{{ upcoming_documents|length > 1 ? ' dashboard-upcoming-scroll' : '' }}">
                 {% for document in upcoming_documents %}
                     {% set diff = today.diff(document.validUntil) %}
                     {% set days_left = diff.invert ? -diff.days : diff.days %}
@@ -367,7 +367,7 @@
                 </div>
             </div>
 
-            <div class="space-y-3{{ expired_documents|length > 3 ? ' dashboard-expired-scroll' : '' }}">
+            <div class="space-y-3{{ expired_documents|length > 1 ? ' dashboard-expired-scroll' : '' }}">
                 {% for document in expired_documents %}
                     {% set expired_diff = document.validUntil.diff(today) %}
                     <article class="dashboard-expired-row rounded border border-danger/20 bg-danger/5 p-3" data-dashboard-document-url="{{ path('document_edit', {id: document.id}) }}" tabindex="0" role="link" aria-label="Uredi dokument {{ document.typeLabel }}">
