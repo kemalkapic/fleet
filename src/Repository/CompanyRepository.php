@@ -37,6 +37,14 @@ class CompanyRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return list<Company>
+     */
+    public function findActive(): array
+    {
+        return $this->findBy(['status' => 'active'], ['name' => 'ASC']);
+    }
+
+    /**
      * @return list<array<string, int|string|null>>
      */
     public function findPlatformSummaries(int $limit = 6): array

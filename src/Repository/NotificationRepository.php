@@ -109,4 +109,22 @@ class NotificationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult() > 0;
     }
+
+    public function existsForSentEvent(Company $company, string $eventKey, string $channel, string $recipient): bool
+    {
+        return (int) $this->createQueryBuilder('notification')
+            ->select('COUNT(notification.id)')
+            ->andWhere('notification.company = :company')
+            ->andWhere('notification.eventKey = :eventKey')
+            ->andWhere('notification.channel = :channel')
+            ->andWhere('notification.recipient = :recipient')
+            ->andWhere('notification.status = :status')
+            ->setParameter('company', $company)
+            ->setParameter('eventKey', $eventKey)
+            ->setParameter('channel', $channel)
+            ->setParameter('recipient', mb_strtolower(trim($recipient)))
+            ->setParameter('status', Notification::STATUS_SENT)
+            ->getQuery()
+            ->getSingleScalarResult() > 0;
+    }
 }

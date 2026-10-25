@@ -46,6 +46,9 @@ class Notification
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $failureReason = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $eventKey = null;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -163,6 +166,19 @@ class Notification
     public function getFailureReason(): ?string
     {
         return $this->failureReason;
+    }
+
+    public function getEventKey(): ?string
+    {
+        return $this->eventKey;
+    }
+
+    public function setEventKey(?string $eventKey): self
+    {
+        $eventKey = $eventKey !== null ? trim($eventKey) : null;
+        $this->eventKey = $eventKey !== '' ? $eventKey : null;
+
+        return $this;
     }
 
     public function getCreatedAt(): \DateTimeImmutable
