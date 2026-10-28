@@ -12,9 +12,38 @@
                 display: none;
             }
 
-            .header-user-initials {
-                display: inline-flex;
+            .notification-popup {
+                position: fixed;
+                top: 4.25rem;
+                left: 0.75rem;
+                right: 0.75rem;
+                z-index: 80;
+                max-height: min(75vh, 560px);
+                overflow: hidden;
             }
+
+            .notification-popup-list {
+                max-height: min(52vh, 400px);
+                overflow-y: auto;
+            }
+
+            .notification-popup-item {
+                display: flex;
+                gap: 0.75rem;
+                align-items: flex-start;
+                padding: 0.8rem 1rem;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+                background: #fff;
+            }
+
+            .notification-popup-item:hover,
+            .notification-popup-item.is-unread { background: rgba(93, 63, 211, 0.055); }
+            .notification-popup-icon { display: inline-flex; width: 2rem; height: 2rem; flex: 0 0 2rem; align-items: center; justify-content: center; border-radius: 4px; color: #5d3fd3; background: rgba(93, 63, 211, 0.1); }
+            .notification-popup-icon svg { width: 1rem; height: 1rem; }
+            .notification-popup-item strong { display: block; color: #111827; font-size: 0.78rem; line-height: 1.15rem; }
+            .notification-popup-item small { display: block; margin-top: 0.15rem; color: #6b7280; font-size: 0.7rem; line-height: 1rem; }
+            .notification-popup-item time { display: block; margin-top: 0.25rem; color: #9ca3af; font-size: 0.65rem; }
+            .notification-unread-dot { width: 0.45rem; height: 0.45rem; margin-top: 0.4rem; flex: 0 0 0.45rem; border-radius: 9999px; background: #5d3fd3; }
 
             .login-contact-links {
                 display: flex;
@@ -52,8 +81,12 @@
                     display: inline;
                 }
 
-                .header-user-initials {
-                    display: none;
+                .notification-popup {
+                    position: absolute;
+                    top: calc(100% + 0.6rem);
+                    left: auto;
+                    right: 0;
+                    width: 390px;
                 }
             }
         </style>
@@ -89,10 +122,42 @@
                             </div>
                             <div class="flex items-center gap-2 sm:gap-3">
                                 {% if app.user %}
-                                    {% set user_initials = ((app.user.firstName|default('')|first) ~ (app.user.lastName|default('')|first))|upper %}
-                                    <span class="header-user-initials items-center justify-center rounded bg-purple/10 px-2.5 py-2 text-sm font-bold leading-none text-purple">
-                                        {{ user_initials ?: (app.user.userIdentifier|first|upper) }}
-                                    </span>
+                                    {% set notification_box = notification_inbox() %}
+                                    <div class="relative" x-data="{ notificationOpen: false }" @click.outside="notificationOpen = false" id="notification-center"
+                                         data-fragment-url="{{ path('notification_fragment') }}"
+                                         data-public-key="{{ notification_box.publicKey }}"
+                                         data-push-configured="{{ notification_box.pushConfigured ? '1' : '0' }}"
+                                         data-subscribe-url="{{ path('push_subscribe') }}"
+                                         data-unsubscribe-url="{{ path('push_unsubscribe') }}"
+                                         data-csrf-token="{{ csrf_token('push_subscription') }}">
+                                        <button type="button" class="relative inline-flex size-10 items-center justify-center rounded bg-black/5 text-black/70 hover:bg-purple/10 hover:text-purple dark:bg-white/10 dark:text-white" @click="notificationOpen = !notificationOpen" aria-label="Obavijesti" :aria-expanded="notificationOpen">
+                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3a6 6 0 0 0-6 6v3.2L4.5 15a1 1 0 0 0 .9 1.5h13.2a1 1 0 0 0 .9-1.5L18 12.2V9a6 6 0 0 0-6-6Z" stroke="currentColor" stroke-width="1.8"/><path d="M9.8 19a2.5 2.5 0 0 0 4.4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                                            <span id="notification-badge" class="absolute right-0 top-0 min-w-[18px] translate-x-1/3 -translate-y-1/3 rounded-full bg-danger px-1 text-center text-[10px] font-bold leading-[18px] text-white shadow-sm {{ notification_box.unreadCount > 0 ? '' : 'hidden' }}">{{ notification_box.unreadCount > 99 ? '99+' : notification_box.unreadCount }}</span>
+                                        </button>
+                                        <section x-cloak x-show="notificationOpen" x-transition class="notification-popup rounded border border-black/10 bg-white shadow-xl dark:border-darkborder dark:bg-darklight">
+                                            <div class="flex items-center justify-between border-b border-black/10 px-4 py-3 dark:border-darkborder">
+                                                <strong class="text-sm text-black dark:text-white">Obavijesti</strong>
+                                                <form method="post" action="{{ path('notification_read_all') }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('notifications_read_all') }}">
+                                                    <button type="submit" class="text-xs font-semibold text-purple">Pročitaj sve</button>
+                                                </form>
+                                            </div>
+                                            <div id="notification-popup-list" class="notification-popup-list">
+                                                {% include 'notification/_dropdown_items.html.twig' with {items: notification_box.items} only %}
+                                            </div>
+                                            <div class="border-t border-black/10 p-3 dark:border-darkborder">
+                                                <a href="{{ path('notification_index') }}" class="inline-flex w-full items-center justify-center rounded bg-purple/10 px-3 py-2 text-xs font-semibold text-purple">Sve obavijesti</a>
+                                                <div id="push-settings" class="{{ notification_box.pushConfigured ? 'flex' : 'hidden' }} mt-2 items-center justify-between gap-3 px-1">
+                                                    <span id="push-status" class="text-[11px] text-muted">Provjera push obavijesti...</span>
+                                                    <button type="button" id="push-toggle" class="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-muted hover:text-purple">
+                                                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.13.39.35.74.65 1 .3.27.69.4 1.1.4H21v4h-.09a1.7 1.7 0 0 0-1.51.6Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                                        <span id="push-toggle-label">Postavke</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <p id="push-message" class="hidden px-3 pb-3 text-center text-[11px] text-muted"></p>
+                                        </section>
+                                    </div>
                                     <span class="header-user-name max-w-[240px] truncate text-sm font-medium text-black dark:text-white">{{ app.user.fullName ?: app.user.userIdentifier }}</span>
                                     <a href="{{ path('app_logout') }}" class="inline-flex items-center justify-center rounded size-10 text-danger bg-danger/10 hover:bg-danger hover:text-white" title="Odjava" aria-label="Odjava">
                                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -112,10 +177,10 @@
                     </main>
 
                     <footer class="border-t border-black/10 bg-white px-4 py-3 text-xs text-muted dark:border-darkborder dark:bg-darklight sm:px-6">
-                        <div class="flex w-full flex-col items-center justify-center gap-1 text-center">
-                            <span class="block w-full text-center">&copy; {{ 'now'|date('Y') }} {{ app_name }}. Sva prava zadržana.</span>
+                        <div class="flex w-full flex-col items-center justify-center gap-2 text-center">
+                            <span class="block w-full text-center font-medium text-black/70 dark:text-white/70">Imate pitanja? Javite nam se, rado ćemo pomoći.</span>
                             {% include 'components/contact_links.html.twig' %}
-                            <span class="block w-full text-center">Izrađeno za upravljanje voznim parkom.</span>
+                            <span class="block w-full text-center">&copy; {{ 'now'|date('Y') }} {{ app_name }}. Sva prava zadržana.</span>
                         </div>
                     </footer>
                 </div>
@@ -126,6 +191,97 @@
         <script src="{{ asset('assets/js/alpine-persist.min.js') }}"></script>
         <script src="{{ asset('assets/js/alpine.min.js') }}" defer></script>
         <script src="{{ asset('assets/js/custom.js') }}"></script>
+        {% if app.user %}
+            <script>
+                (() => {
+                    const center = document.getElementById('notification-center');
+                    if (!center) return;
+
+                    const badge = document.getElementById('notification-badge');
+                    const list = document.getElementById('notification-popup-list');
+                    const pushButton = document.getElementById('push-toggle');
+                    const pushButtonLabel = document.getElementById('push-toggle-label');
+                    const pushStatus = document.getElementById('push-status');
+                    const pushMessage = document.getElementById('push-message');
+
+                    const refreshInbox = async () => {
+                        try {
+                            const response = await fetch(center.dataset.fragmentUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                            if (!response.ok) return;
+                            const data = await response.json();
+                            list.innerHTML = data.html;
+                            const count = Number(data.unreadCount || 0);
+                            badge.textContent = count > 99 ? '99+' : String(count);
+                            badge.classList.toggle('hidden', count === 0);
+                        } catch (error) {}
+                    };
+
+                    const urlBase64ToUint8Array = (value) => {
+                        const padding = '='.repeat((4 - value.length % 4) % 4);
+                        const base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/');
+                        return Uint8Array.from(atob(base64), character => character.charCodeAt(0));
+                    };
+
+                    const postSubscription = async (url, subscription) => {
+                        const serialized = subscription.toJSON();
+                        serialized.contentEncoding = (PushManager.supportedContentEncodings || ['aes128gcm'])[0];
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': center.dataset.csrfToken },
+                            body: JSON.stringify(serialized),
+                        });
+                        if (!response.ok) throw new Error('Pretplata nije spremljena.');
+                    };
+
+                    const updatePushButton = async (registration) => {
+                        const subscription = await registration.pushManager.getSubscription();
+                        pushStatus.textContent = subscription ? 'Push obavijesti su uključene' : 'Push obavijesti nisu uključene';
+                        pushStatus.className = subscription ? 'text-[11px] font-semibold text-success' : 'text-[11px] text-muted';
+                        pushButtonLabel.textContent = subscription ? 'Postavke' : 'Uključi';
+                    };
+
+                    if (center.dataset.pushConfigured === '1' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window) {
+                        navigator.serviceWorker.register('/service-worker.js').then(updatePushButton).catch(() => {
+                            pushStatus.textContent = 'Push nije dostupan u ovom browseru';
+                            pushButtonLabel.textContent = 'Nedostupno';
+                            pushButton.disabled = true;
+                        });
+
+                        pushButton.addEventListener('click', async () => {
+                            pushButton.disabled = true;
+                            pushMessage.classList.add('hidden');
+                            try {
+                                const registration = await navigator.serviceWorker.ready;
+                                const existing = await registration.pushManager.getSubscription();
+                                if (existing) {
+                                    if (!window.confirm('Želite li isključiti push obavijesti na ovom uređaju?')) return;
+                                    await postSubscription(center.dataset.unsubscribeUrl, existing);
+                                    await existing.unsubscribe();
+                                } else {
+                                    const permission = await Notification.requestPermission();
+                                    if (permission !== 'granted') throw new Error('Dozvola za obavijesti nije odobrena.');
+                                    const subscription = await registration.pushManager.subscribe({
+                                        userVisibleOnly: true,
+                                        applicationServerKey: urlBase64ToUint8Array(center.dataset.publicKey),
+                                    });
+                                    await postSubscription(center.dataset.subscribeUrl, subscription);
+                                }
+                                await updatePushButton(registration);
+                            } catch (error) {
+                                pushMessage.textContent = error.message || 'Push obavijesti trenutno nisu dostupne.';
+                                pushMessage.classList.remove('hidden');
+                            } finally {
+                                pushButton.disabled = false;
+                            }
+                        });
+                    } else if (pushButton) {
+                        pushButton.classList.add('hidden');
+                    }
+
+                    window.setInterval(refreshInbox, 60000);
+                })();
+            </script>
+        {% endif %}
         {% block javascripts %}{% endblock %}
     </body>
 </html>

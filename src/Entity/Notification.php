@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Notification
 {
     public const CHANNEL_EMAIL = 'email';
+    public const CHANNEL_WEB_PUSH = 'web_push';
     public const STATUS_SENT = 'sent';
     public const STATUS_FAILED = 'failed';
 
@@ -24,6 +25,10 @@ class Notification
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?FleetDocument $document = null;
+
+    #[ORM\ManyToOne(inversedBy: 'deliveryLogs')]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?UserNotification $inboxItem = null;
 
     #[ORM\Column(length: 30)]
     private string $channel = self::CHANNEL_EMAIL;
@@ -82,6 +87,18 @@ class Notification
     public function setDocument(?FleetDocument $document): self
     {
         $this->document = $document;
+
+        return $this;
+    }
+
+    public function getInboxItem(): ?UserNotification
+    {
+        return $this->inboxItem;
+    }
+
+    public function setInboxItem(?UserNotification $inboxItem): self
+    {
+        $this->inboxItem = $inboxItem;
 
         return $this;
     }

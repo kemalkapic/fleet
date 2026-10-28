@@ -48,6 +48,8 @@ TEXT;
         private UserRepository $users,
         private NotificationRepository $notifications,
         private NotificationEmailSender $emailSender,
+        private NotificationInbox $inbox,
+        private WebPushSender $webPushSender,
         private EntityManagerInterface $entityManager,
     ) {
     }
@@ -76,6 +78,16 @@ TEXT;
             }
 
             foreach ($recipients as $recipient) {
+                $inboxItem = $this->inbox->create(
+                    $recipient,
+                    $company,
+                    $eventKey,
+                    $subject,
+                    $message,
+                    '/notifications',
+                );
+                $this->webPushSender->send($inboxItem, $schedule['daysBefore']);
+
                 if ($this->notifications->existsForSentEvent(
                     $company,
                     $eventKey,
@@ -92,7 +104,8 @@ TEXT;
                     ->setTriggerDaysBefore($schedule['daysBefore'])
                     ->setRecipient($recipient->getEmail())
                     ->setMessageText($message)
-                    ->setEventKey($eventKey);
+                    ->setEventKey($eventKey)
+                    ->setInboxItem($inboxItem);
 
                 try {
                     $this->emailSender->send($recipient, $subject, $message);

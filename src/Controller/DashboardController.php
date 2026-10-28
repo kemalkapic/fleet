@@ -7,6 +7,7 @@ use App\Repository\DriverRepository;
 use App\Repository\FleetDocumentRepository;
 use App\Repository\NotificationRepository;
 use App\Repository\UserRepository;
+use App\Repository\UserActivityRepository;
 use App\Repository\VehicleRepository;
 use App\Service\Tenant\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,6 +25,7 @@ class DashboardController extends AbstractController
         FleetDocumentRepository $documents,
         NotificationRepository $notifications,
         UserRepository $users,
+        UserActivityRepository $userActivities,
     ): Response
     {
         $company = $tenantContext->getCompany();
@@ -60,6 +62,36 @@ class DashboardController extends AbstractController
         }
 
         if ($this->isGranted('ROLE_SUPER_ADMIN')) {
+            $activityStart = $today->modify('-13 days');
+            $activityLabels = [];
+            $activityValues = [];
+            $activityDetails = [];
+            $activityIndexes = [];
+            for ($dayOffset = 0; $dayOffset < 14; ++$dayOffset) {
+                $day = $activityStart->modify(sprintf('+%d days', $dayOffset));
+                $key = $day->format('Y-m-d');
+                $activityIndexes[$key] = $dayOffset;
+                $activityLabels[] = $day->format('d.m.');
+                $activityValues[] = 0;
+                $activityDetails[] = [];
+            }
+
+            foreach ($userActivities->findPlatformBetween($activityStart, $today) as $activity) {
+                $dayIndex = $activityIndexes[$activity->getActivityDate()->format('Y-m-d')] ?? null;
+                $user = $activity->getUser();
+                if ($dayIndex === null || $user === null) {
+                    continue;
+                }
+
+                ++$activityValues[$dayIndex];
+                $activityDetails[$dayIndex][] = [
+                    'user' => $user->getFullName() ?: $user->getEmail(),
+                    'email' => $user->getEmail(),
+                    'company' => $activity->getCompany()?->getName() ?? '-',
+                    'time' => $activity->getLastSeenAt()->format('H:i'),
+                ];
+            }
+
             foreach ($documents->findPlatformExpiringBetween($today, $chartEnd) as $document) {
                 $monthIndex = $expiryChartIndexes[$document->getValidUntil()->format('Y-m')] ?? null;
 
@@ -90,6 +122,9 @@ class DashboardController extends AbstractController
                 'expiry_chart_labels' => $expiryChartLabels,
                 'expiry_chart_values' => $expiryChartValues,
                 'expiry_chart_details' => $expiryChartDetails,
+                'activity_chart_labels' => $activityLabels,
+                'activity_chart_values' => $activityValues,
+                'activity_chart_details' => $activityDetails,
             ]);
         }
 

@@ -23,7 +23,7 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return array{total: int, active: int, inactive: int}
+     * @return array{total: int, active: int, inactive: int, recentlyActive: int}
      */
     public function getPlatformStatusCounts(): array
     {
@@ -34,10 +34,19 @@ class UserRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleResult();
 
+        $recentlyActive = (int) $this->createQueryBuilder('recentUser')
+            ->select('COUNT(recentUser.id)')
+            ->andWhere('recentUser.company IS NOT NULL')
+            ->andWhere('recentUser.lastActiveAt >= :since')
+            ->setParameter('since', new \DateTimeImmutable('-7 days'))
+            ->getQuery()
+            ->getSingleScalarResult();
+
         return [
             'total' => (int) $result['total'],
             'active' => (int) $result['active'],
             'inactive' => (int) $result['inactive'],
+            'recentlyActive' => $recentlyActive,
         ];
     }
 

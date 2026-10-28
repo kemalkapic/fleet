@@ -5,6 +5,7 @@ namespace App\Controller\Platform;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
+use App\Service\Notification\TestNotificationSender;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -81,5 +82,31 @@ class UserController extends AbstractController
             'user' => $user,
             'form' => $form,
         ]);
+    }
+
+    #[Route('/{id}/send-test-notifications', name: 'send_test_notifications', methods: ['POST'])]
+    public function sendTestNotifications(
+        User $user,
+        Request $request,
+        TestNotificationSender $sender,
+    ): Response {
+        if (!$this->isCsrfTokenValid('send_test_notifications_'.$user->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        try {
+            $result = $sender->send($user);
+            $this->addFlash('success', sprintf(
+                'Za %s kreirano je %d obavijesti, isporučeno %d push poruka i %s jedan testni email.',
+                $user->getEmail(),
+                $result['notifications'],
+                $result['pushSent'],
+                $result['emailSent'] ? 'poslan je' : 'nije poslan',
+            ));
+        } catch (\Throwable $exception) {
+            $this->addFlash('error', 'Testno slanje nije uspjelo: '.$exception->getMessage());
+        }
+
+        return $this->redirectToRoute('platform_user_index');
     }
 }

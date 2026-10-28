@@ -1,0 +1,22 @@
+{% for item in items %}
+    <a href="{{ path('notification_open', {id: item.id}) }}" class="notification-popup-item {{ item.read ? '' : 'is-unread' }}">
+        <span class="notification-popup-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 0 0-6 6v3.2L4.5 15a1 1 0 0 0 .9 1.5h13.2a1 1 0 0 0 .9-1.5L18 12.2V9a6 6 0 0 0-6-6Z" stroke="currentColor" stroke-width="1.8"/><path d="M9.8 19a2.5 2.5 0 0 0 4.4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+        <span class="min-w-0 flex-1">
+            <strong>{{ item.title }}</strong>
+            <small>{{ item.messageText|length > 115 ? item.messageText|slice(0, 115) ~ '...' : item.messageText }}</small>
+            <time>{{ item.createdAt|date('d.m.Y H:i') }}</time>
+            {% if item.deliveryChannels %}
+                <span class="mt-1 flex flex-wrap gap-1">
+                    {% for channel in item.deliveryChannels %}
+                        <span class="rounded px-1.5 py-0.5 text-[10px] font-semibold {{ channel == 'email' ? 'bg-info/10 text-info' : 'bg-purple/10 text-purple' }}">{{ channel == 'email' ? 'EMAIL' : 'WEB PUSH' }}</span>
+                    {% endfor %}
+                </span>
+            {% endif %}
+        </span>
+        {% if not item.read %}<span class="notification-unread-dot" aria-label="Nepročitano"></span>{% endif %}
+    </a>
+{% else %}
+    <div class="p-6 text-center text-sm text-muted">Još nema obavijesti.</div>
+{% endfor %}

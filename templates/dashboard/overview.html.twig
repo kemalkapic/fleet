@@ -286,7 +286,7 @@
         </a>
 
         <a href="{{ path('notification_index') }}" class="dashboard-stat-card block p-5 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
-            <p class="text-muted">Poslane notifikacije</p>
+            <p class="text-muted">Poslane obavijesti</p>
             <div class="flex items-end justify-between mt-4">
                 <h2 class="text-3xl font-semibold text-black dark:text-white">{{ stats.sentNotifications }}</h2>
                 <span class="dashboard-stat-icon text-warning bg-warning/10">
@@ -411,7 +411,7 @@
                 <i class="ri-notification-line"></i>
             </span>
             <div class="min-w-0">
-                <h2 class="dashboard-section-title">Zadnje notifikacije</h2>
+                <h2 class="dashboard-section-title">Zadnje obavijesti</h2>
                 <p class="dashboard-section-description">Posljednje evidentirane email obavijesti.</p>
             </div>
         </div>
@@ -431,7 +431,7 @@
                     <p class="mt-2 text-xs leading-5 text-muted">{{ notification.messageText }}</p>
                 </article>
             {% else %}
-                <p class="text-sm text-muted">Još nema poslanih notifikacija.</p>
+                <p class="text-sm text-muted">Još nema poslanih obavijesti.</p>
             {% endfor %}
         </div>
     </section>

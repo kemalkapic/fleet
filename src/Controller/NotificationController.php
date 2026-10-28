@@ -2,38 +2,77 @@
 
 namespace App\Controller;
 
-use App\Entity\Company;
-use App\Enum\Module;
-use App\Repository\NotificationRepository;
-use App\Service\Module\ModuleChecker;
-use App\Service\Tenant\TenantContext;
+use App\Entity\User;
+use App\Repository\UserNotificationRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/notifications', name: 'notification_')]
-#[IsGranted('ROLE_COMPANY_ADMIN')]
+#[IsGranted('ROLE_USER')]
 class NotificationController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(
-        TenantContext $tenantContext,
-        ModuleChecker $moduleChecker,
-        NotificationRepository $notifications,
+        UserNotificationRepository $notifications,
     ): Response {
-        $company = $tenantContext->requireCompany();
-        $this->denyAccessUnlessGrantedForModule($moduleChecker, $company);
-
         return $this->render('notification/index.html.twig', [
-            'notifications' => $notifications->findForCompany($company),
+            'notifications' => $notifications->findLatestForUser($this->requireUser(), 200),
         ]);
     }
 
-    private function denyAccessUnlessGrantedForModule(ModuleChecker $moduleChecker, Company $company): void
+    #[Route('/fragment', name: 'fragment', methods: ['GET'])]
+    public function fragment(UserNotificationRepository $notifications): JsonResponse
     {
-        if (!$moduleChecker->isEnabled($company, Module::DOCUMENTS)) {
-            throw $this->createAccessDeniedException('Documents module is disabled.');
+        $user = $this->requireUser();
+
+        return $this->json([
+            'unreadCount' => $notifications->countUnreadForUser($user),
+            'html' => $this->renderView('notification/_dropdown_items.html.twig', [
+                'items' => $notifications->findLatestForUser($user),
+            ]),
+        ]);
+    }
+
+    #[Route('/read-all', name: 'read_all', methods: ['POST'])]
+    public function readAll(Request $request, UserNotificationRepository $notifications): RedirectResponse
+    {
+        if (!$this->isCsrfTokenValid('notifications_read_all', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
         }
+
+        $notifications->markAllRead($this->requireUser());
+
+        return $this->redirectToRoute('notification_index');
+    }
+
+    #[Route('/{id}/open', name: 'open', requirements: ['id' => '\\d+'], methods: ['GET'])]
+    public function open(int $id, UserNotificationRepository $notifications, EntityManagerInterface $entityManager): RedirectResponse
+    {
+        $item = $notifications->findOneForUser($id, $this->requireUser());
+        if ($item === null) {
+            throw $this->createNotFoundException();
+        }
+
+        $item->markRead();
+        $entityManager->flush();
+        $targetUrl = $item->getTargetUrl();
+
+        return new RedirectResponse($targetUrl !== null && str_starts_with($targetUrl, '/') && !str_starts_with($targetUrl, '//') ? $targetUrl : $this->generateUrl('notification_index'));
+    }
+
+    private function requireUser(): User
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
+        return $user;
     }
 }

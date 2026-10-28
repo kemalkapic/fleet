@@ -300,6 +300,7 @@
             <div class="platform-stat-breakdown">
                 <span><strong class="text-success">{{ platform_stats.users.active }}</strong>Aktivni</span>
                 <span><strong class="text-danger">{{ platform_stats.users.inactive }}</strong>Neaktivni</span>
+                <span class="col-span-2"><strong class="text-info">{{ platform_stats.users.recentlyActive }}</strong>Koristili aplikaciju u zadnjih 7 dana</span>
             </div>
         </a>
 
@@ -318,7 +319,7 @@
 
         <div class="platform-stat-card">
             <div class="platform-stat-heading">
-                <p class="font-semibold text-black dark:text-white">Notifikacije</p>
+                <p class="font-semibold text-black dark:text-white">Obavijesti</p>
                 <span class="platform-stat-icon bg-danger/10 text-danger"><i class="ri-notification-3-line"></i></span>
             </div>
             <p class="platform-stat-value">{{ platform_stats.notifications.total }}</p>
@@ -391,7 +392,7 @@
                 </div>
                 <div class="platform-health-row">
                     <div>
-                        <p class="font-medium text-black dark:text-white">Neuspjele notifikacije</p>
+                        <p class="font-medium text-black dark:text-white">Neuspjele obavijesti</p>
                         <p class="mt-1 text-xs text-muted">Poruke koje nisu uspješno poslane</p>
                     </div>
                     <strong class="text-lg text-danger">{{ platform_stats.notifications.failed }}</strong>
@@ -423,6 +424,24 @@
             data-chart-details="{{ expiry_chart_details|json_encode|e('html_attr') }}"
         ></div>
         <div id="platform-expiry-details" class="mt-3 hidden rounded border border-black/10 bg-black/[0.02] p-3 dark:border-darkborder dark:bg-white/[0.03]"></div>
+    </section>
+
+    <section class="platform-section mt-4">
+        <div class="platform-section-header">
+            <span class="platform-section-icon bg-success/10 text-success"><i class="ri-line-chart-line"></i></span>
+            <div class="min-w-0">
+                <h2 class="platform-section-title">Aktivnost korisnika</h2>
+                <p class="platform-section-description">Broj različitih korisnika firmi koji su koristili aplikaciju u posljednjih 14 dana.</p>
+            </div>
+        </div>
+        <div
+            id="platform-activity-chart"
+            style="min-height: 260px;"
+            data-chart-labels="{{ activity_chart_labels|json_encode|e('html_attr') }}"
+            data-chart-values="{{ activity_chart_values|json_encode|e('html_attr') }}"
+            data-chart-details="{{ activity_chart_details|json_encode|e('html_attr') }}"
+        ></div>
+        <div id="platform-activity-details" class="mt-3 hidden rounded border border-black/10 bg-black/[0.02] p-3 dark:border-darkborder dark:bg-white/[0.03]"></div>
     </section>
 
     <script src="{{ asset('assets/js/apexcharts.js') }}"></script>
@@ -516,6 +535,58 @@
                         plotOptions: { bar: { columnWidth: '58%' } },
                     },
                 }],
+            }).render();
+        })();
+
+        (() => {
+            const chartElement = document.querySelector('#platform-activity-chart');
+            if (!chartElement || typeof ApexCharts === 'undefined') return;
+
+            const labels = JSON.parse(chartElement.dataset.chartLabels || '[]');
+            const values = JSON.parse(chartElement.dataset.chartValues || '[]');
+            const details = JSON.parse(chartElement.dataset.chartDetails || '[]');
+            const detailsElement = document.querySelector('#platform-activity-details');
+            const escapeHtml = (value) => String(value)
+                .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+
+            new ApexCharts(chartElement, {
+                chart: {
+                    type: 'area',
+                    height: 280,
+                    fontFamily: 'inherit',
+                    toolbar: { show: false },
+                    events: {
+                        dataPointSelection: (event, chartContext, config) => {
+                            if (!detailsElement || config.dataPointIndex < 0) return;
+                            const users = details[config.dataPointIndex] || [];
+                            const rows = users.length === 0
+                                ? '<p class="text-sm text-muted">Nema zabilježene aktivnosti.</p>'
+                                : users.map((item) => `<div class="border-t border-black/10 py-2 first:border-t-0"><strong class="text-black">${escapeHtml(item.user)}</strong><div class="mt-1 text-xs text-muted">${escapeHtml(item.company)} &middot; ${escapeHtml(item.email)} &middot; zadnja aktivnost ${escapeHtml(item.time)}</div></div>`).join('');
+                            detailsElement.innerHTML = `<p class="mb-1 text-xs font-semibold uppercase text-muted">${escapeHtml(labels[config.dataPointIndex] || '')}</p>${rows}`;
+                            detailsElement.classList.remove('hidden');
+                        },
+                    },
+                },
+                series: [{ name: 'Aktivni korisnici', data: values }],
+                colors: ['#10b981'],
+                stroke: { curve: 'smooth', width: 3 },
+                fill: { type: 'gradient', gradient: { opacityFrom: 0.32, opacityTo: 0.04 } },
+                markers: { size: 4, hover: { size: 6 } },
+                dataLabels: { enabled: false },
+                grid: { borderColor: '#e5e7eb', strokeDashArray: 4 },
+                xaxis: {
+                    categories: labels,
+                    labels: { rotate: -35, style: { colors: '#6b7280', fontSize: '11px' } },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                },
+                yaxis: {
+                    min: 0,
+                    forceNiceScale: true,
+                    labels: { formatter: (value) => Number.isInteger(value) ? value : '', style: { colors: '#6b7280' } },
+                },
+                tooltip: { y: { formatter: (value) => `${value} korisnika` } },
             }).render();
         })();
     </script>

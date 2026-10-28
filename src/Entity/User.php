@@ -50,6 +50,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private \DateTimeImmutable $updatedAt;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastActiveAt = null;
+
     public function __construct()
     {
         $now = new \DateTimeImmutable();
@@ -196,6 +199,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUpdatedAt(): \DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    public function getLastActiveAt(): ?\DateTimeImmutable
+    {
+        return $this->lastActiveAt;
+    }
+
+    public function recordActivity(?\DateTimeImmutable $at = null): self
+    {
+        $this->lastActiveAt = $at ?? new \DateTimeImmutable();
+
+        return $this;
     }
 
     public function eraseCredentials(): void

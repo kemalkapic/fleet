@@ -19,6 +19,8 @@ final readonly class DocumentExpiryNotifier
         private NotificationRepository $notifications,
         private UserRepository $users,
         private NotificationEmailSender $emailSender,
+        private NotificationInbox $inbox,
+        private WebPushSender $webPushSender,
         private EntityManagerInterface $entityManager,
     ) {
     }
@@ -45,24 +47,44 @@ final readonly class DocumentExpiryNotifier
                 }
 
                 foreach ($recipients as $recipient) {
-                    if ($this->notifications->existsForDocumentThreshold(
-                        $document,
-                        Notification::CHANNEL_EMAIL,
+                    $message = $this->buildMessage($document, $daysBefore);
+                    $title = $this->buildTitle($document, $daysBefore);
+                    $eventKey = sprintf(
+                        'document_%d_%s_%d',
+                        $document->getId(),
+                        $document->getValidUntil()->format('Ymd'),
                         $daysBefore,
+                    );
+                    $inboxItem = $this->inbox->create(
+                        $recipient,
+                        $company,
+                        $eventKey,
+                        $title,
+                        $message,
+                        '/documents/'.$document->getId().'/edit',
+                        $document,
+                    );
+                    $this->webPushSender->send($inboxItem, $daysBefore);
+
+                    if ($this->notifications->existsForSentEvent(
+                        $company,
+                        $eventKey,
+                        Notification::CHANNEL_EMAIL,
                         $recipient->getEmail(),
                     )) {
                         ++$skipped;
                         continue;
                     }
 
-                    $message = $this->buildMessage($document, $daysBefore);
                     $notification = (new Notification())
                         ->setCompany($company)
                         ->setDocument($document)
                         ->setChannel(Notification::CHANNEL_EMAIL)
                         ->setTriggerDaysBefore($daysBefore)
                         ->setRecipient($recipient->getEmail())
-                        ->setMessageText($message);
+                        ->setMessageText($message)
+                        ->setEventKey($eventKey)
+                        ->setInboxItem($inboxItem);
 
                     $batchKey = ($company->getId() ?? spl_object_id($company)).'|'.mb_strtolower($recipient->getEmail());
                     $batches[$batchKey] ??= ['recipient' => $recipient, 'items' => []];
@@ -157,6 +179,23 @@ final readonly class DocumentExpiryNotifier
             $daysBefore === 1 ? 'za 1 dan' : sprintf('za %d dana', $daysBefore),
             $document->getValidUntil()->format('d.m.Y'),
         );
+    }
+
+    private function buildTitle(FleetDocument $document, int $daysBefore): string
+    {
+        $prefix = match ($daysBefore) {
+            -1 => 'Isteklo',
+            1 => 'Hitno',
+            7 => 'Upozorenje',
+            default => 'Podsjetnik',
+        };
+        $expiry = match ($daysBefore) {
+            -1 => 'isteklo je jučer',
+            1 => 'ističe sutra',
+            default => sprintf('ističe za %d dana', $daysBefore),
+        };
+
+        return sprintf('%s: %s za %s %s', $prefix, $document->getTypeLabel(), $document->getOwnerLabel(), $expiry);
     }
 
     /**

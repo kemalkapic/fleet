@@ -22,6 +22,11 @@
             {{ message }}
         </div>
     {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="p-3 mt-4 text-sm rounded text-danger bg-danger/10">
+            {{ message }}
+        </div>
+    {% endfor %}
 
     <section class="p-5 mt-4 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10">
         <div class="overflow-auto">
@@ -32,6 +37,7 @@
                         <th>Firma</th>
                         <th>Role</th>
                         <th>Status</th>
+                        <th>Zadnja aktivnost</th>
                         <th class="text-right">Akcije</th>
                     </tr>
                 </thead>
@@ -57,7 +63,28 @@
                                     <span class="px-2 py-1 text-xs rounded bg-danger/10 text-danger">Neaktivan</span>
                                 {% endif %}
                             </td>
+                            <td>
+                                {% if user.lastActiveAt %}
+                                    <span class="block font-medium text-black dark:text-white">{{ user.lastActiveAt|date('d.m.Y H:i') }}</span>
+                                    <span class="text-xs text-muted">
+                                        {% set inactive_days = date().diff(user.lastActiveAt).days %}
+                                        {{ inactive_days == 0 ? 'Danas' : (inactive_days == 1 ? 'Prije 1 dan' : 'Prije ' ~ inactive_days ~ ' dana') }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-xs text-muted">Nema aktivnosti</span>
+                                {% endif %}
+                            </td>
                             <td class="text-right">
+                                <div class="inline-flex items-center gap-2">
+                                {% if user.company and user.active %}
+                                    <form method="post" action="{{ path('platform_user_send_test_notifications', {id: user.id}) }}" onsubmit="return confirm('Poslati 5 testnih push obavijesti i jedan email korisniku {{ user.email|e('js') }}?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('send_test_notifications_' ~ user.id) }}">
+                                        <button type="submit" class="inline-flex items-center justify-center gap-2 px-3 py-2 rounded text-info bg-info/10" title="Pošalji testne obavijesti">
+                                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m4 4 17 8-17 8 3-8-3-8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                            Test obavijesti
+                                        </button>
+                                    </form>
+                                {% endif %}
                                 <a href="{{ path('platform_user_edit', {id: user.id}) }}" class="inline-flex items-center justify-center gap-2 px-3 py-2 rounded text-purple bg-purple/10">
                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
@@ -65,11 +92,12 @@
                                     </svg>
                                     Uredi
                                 </a>
+                                </div>
                             </td>
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="5" class="py-8 text-center text-muted">Još nema kreiranih korisnika.</td>
+                            <td colspan="6" class="py-8 text-center text-muted">Još nema kreiranih korisnika.</td>
                         </tr>
                     {% endfor %}
                 </tbody>

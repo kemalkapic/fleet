@@ -8,6 +8,7 @@ RUN apt-get update \
         libzip-dev \
         default-mysql-client \
     && docker-php-ext-install \
+        bcmath \
         intl \
         opcache \
         pdo_mysql \

@@ -1,6 +1,9 @@
 parameters:
     app.mail_from: 'noreply@kmmapps.com'
     app.name: 'Vozi Miško'
+    env(WEB_PUSH_PUBLIC_KEY): ''
+    env(WEB_PUSH_PRIVATE_KEY): ''
+    env(WEB_PUSH_SUBJECT): ''
 
 services:
     _defaults:
@@ -10,6 +13,9 @@ services:
             string $projectDir: '%kernel.project_dir%'
             string $appName: '%app.name%'
             string $mailFrom: '%app.mail_from%'
+            string $webPushPublicKey: '%env(WEB_PUSH_PUBLIC_KEY)%'
+            string $webPushPrivateKey: '%env(WEB_PUSH_PRIVATE_KEY)%'
+            string $webPushSubject: '%env(WEB_PUSH_SUBJECT)%'
 
     App\Service\DocumentScan\DocumentDataExtractorInterface:
         alias: App\Service\DocumentScan\OpenRouterDocumentDataExtractor
