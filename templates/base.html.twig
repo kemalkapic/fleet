@@ -147,11 +147,11 @@
                                             </div>
                                             <div class="border-t border-black/10 p-3 dark:border-darkborder">
                                                 <a href="{{ path('notification_index') }}" class="inline-flex w-full items-center justify-center rounded bg-purple/10 px-3 py-2 text-xs font-semibold text-purple">Sve obavijesti</a>
-                                                <div id="push-settings" class="{{ notification_box.pushConfigured ? 'flex' : 'hidden' }} mt-2 items-center justify-between gap-3 px-1">
-                                                    <span id="push-status" class="text-[11px] text-muted">Provjera push obavijesti...</span>
+                                                <div id="push-settings" class="mt-2 flex items-center justify-between gap-3 px-1">
+                                                    <span id="push-status" class="text-[11px] text-muted">{{ notification_box.pushConfigured ? 'Provjera push obavijesti...' : 'Push nije konfiguriran na serveru' }}</span>
                                                     <button type="button" id="push-toggle" class="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-muted hover:text-purple">
                                                         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.13.39.35.74.65 1 .3.27.69.4 1.1.4H21v4h-.09a1.7 1.7 0 0 0-1.51.6Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                                        <span id="push-toggle-label">Postavke</span>
+                                                        <span id="push-toggle-label">{{ notification_box.pushConfigured ? 'Uključi' : 'Nedostupno' }}</span>
                                                     </button>
                                                 </div>
                                             </div>
@@ -240,7 +240,10 @@
                         pushButtonLabel.textContent = subscription ? 'Postavke' : 'Uključi';
                     };
 
-                    if (center.dataset.pushConfigured === '1' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window) {
+                    const pushConfigured = center.dataset.pushConfigured === '1';
+                    const pushSupported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+
+                    if (pushConfigured && pushSupported && window.isSecureContext) {
                         navigator.serviceWorker.register('/service-worker.js').then(updatePushButton).catch(() => {
                             pushStatus.textContent = 'Push nije dostupan u ovom browseru';
                             pushButtonLabel.textContent = 'Nedostupno';
@@ -275,7 +278,20 @@
                             }
                         });
                     } else if (pushButton) {
-                        pushButton.classList.add('hidden');
+                        pushButtonLabel.textContent = 'Nedostupno';
+                        pushButton.disabled = true;
+
+                        if (!pushConfigured) {
+                            pushStatus.textContent = 'Push nije konfiguriran na serveru';
+                        } else if (!window.isSecureContext) {
+                            pushStatus.textContent = 'Otvorite aplikaciju preko HTTPS veze';
+                        } else {
+                            const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+                            pushStatus.textContent = isIos && !isStandalone
+                                ? 'Na iPhoneu prvo dodajte aplikaciju na po\u010detni zaslon'
+                                : 'Push nije dostupan u ovom pregledniku';
+                        }
                     }
 
                     window.setInterval(refreshInbox, 60000);
