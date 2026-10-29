@@ -5,12 +5,12 @@
     @keydown.escape.window="if (!required) open = false"
     x-show="open"
     x-cloak
-    class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 p-3 sm:p-6"
+    class="fixed inset-0 z-[10000] flex items-center justify-center overflow-hidden bg-black/70 p-2 sm:p-6"
     role="dialog"
     aria-modal="true"
     aria-labelledby="terms-title"
 >
-    <section class="flex max-h-[94vh] w-full max-w-4xl flex-col overflow-hidden rounded border border-black/10 bg-white shadow-2xl dark:border-darkborder dark:bg-darklight">
+    <section class="flex h-[calc(100dvh-1rem)] min-h-0 w-full max-w-4xl flex-col overflow-hidden rounded border border-black/10 bg-white shadow-2xl dark:border-darkborder dark:bg-darklight sm:h-auto sm:max-h-[calc(100dvh-3rem)]">
         <header class="flex shrink-0 items-start justify-between gap-4 border-b border-black/10 px-4 py-4 dark:border-darkborder sm:px-6">
             <div>
                 <div class="mb-1 flex items-center gap-2 text-purple">
@@ -31,7 +31,7 @@
             </button>
         </header>
 
-        <div class="terms-content flex-1 overflow-y-auto px-4 py-4 text-sm leading-6 text-black/75 dark:text-white/75 sm:px-6 sm:py-5">
+        <div class="terms-content min-h-0 flex-1 overscroll-contain overflow-y-auto px-4 py-4 text-sm leading-6 text-black/75 dark:text-white/75 sm:px-6 sm:py-5">
             {% if terms_required %}
                 <div class="mb-5 border-l-4 border-purple bg-purple/5 px-4 py-3 text-sm">
                     Prije nastavka rada potrebno je prihvatiti ove uvjete. Do tada ostale funkcije aplikacije nisu dostupne.
@@ -101,7 +101,7 @@
             </div>
         </div>
 
-        <footer class="shrink-0 border-t border-black/10 bg-white px-4 py-4 dark:border-darkborder dark:bg-darklight sm:px-6">
+        <footer class="shrink-0 border-t border-black/10 bg-white px-4 py-3 dark:border-darkborder dark:bg-darklight sm:px-6 sm:py-4">
             {% if terms_required %}
                 <form method="post" action="{{ path('terms_accept') }}" class="space-y-3">
                     <input type="hidden" name="_token" value="{{ csrf_token('accept_terms_' ~ terms_version) }}">
