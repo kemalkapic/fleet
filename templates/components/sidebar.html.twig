@@ -8,7 +8,7 @@
 {% set is_notifications = current_route starts with 'notification_' %}
 
 <nav class="sidebar fixed z-[9999] flex-none w-[240px] ltr:border-r rtl:border-l dark:bg-darkborder border-black/10 transition-all duration-300 overflow-hidden" style="height: 100vh; height: 100dvh;">
-    <div class="flex h-full flex-col bg-white dark:bg-darklight">
+    <div class="sidebar-layout h-full bg-white dark:bg-darklight">
         <div class="shrink-0 p-4">
             <a href="{{ path('app_dashboard') }}" class="flex items-center justify-center gap-2 w-full main-logo">
                 <img src="{{ asset('assets/images/logo-light.png') }}" class="h-18" alt="{{ app_name }}">
@@ -16,7 +16,7 @@
             </a>
         </div>
 
-        <div class="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-5 pb-4">
+        <div class="sidebar-menu-area min-h-0 overflow-y-auto overflow-x-hidden px-5 pb-4">
             <ul class="relative flex flex-col gap-1">
                 <h2 class="my-2 text-sm text-black/50 dark:text-white/30"><span>Osnovno</span></h2>
 
@@ -103,7 +103,7 @@
             </ul>
 
             {% if app.user %}
-                <div class="mt-auto border-t border-black/10 pt-5 dark:border-darkborder">
+                <div class="sidebar-terms-link border-t border-black/10 pt-5 dark:border-darkborder">
                     <button type="button" class="nav-link group flex w-full items-center text-left" @click="$dispatch('terms-open')">
                         <div class="flex items-center">
                             <i class="ri-information-line text-xl"></i>
@@ -115,3 +115,22 @@
         </div>
     </div>
 </nav>
+
+<style>
+    .sidebar-layout {
+        display: flex;
+        height: 100%;
+        min-height: 0;
+        flex-direction: column;
+    }
+    .sidebar-menu-area {
+        display: flex;
+        min-height: 0;
+        flex: 1 1 0%;
+        flex-direction: column;
+    }
+    .sidebar-terms-link {
+        margin-top: auto;
+        flex: 0 0 auto;
+    }
+</style>
