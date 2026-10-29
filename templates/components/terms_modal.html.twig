@@ -38,9 +38,20 @@
                 </div>
             {% endif %}
 
+            <div class="mb-5 grid gap-2 rounded border border-black/10 bg-black/[0.02] p-4 text-xs dark:border-darkborder dark:bg-white/[0.03] sm:grid-cols-2">
+                <div>
+                    <span class="block text-muted">Pružalac aplikacije</span>
+                    <strong class="text-black dark:text-white">{{ app_operator_name }}, {{ app_operator_status }}</strong>
+                </div>
+                <div>
+                    <span class="block text-muted">Kontakt za privatnost i podršku</span>
+                    <strong class="text-black dark:text-white">{{ app_privacy_phone }}</strong>
+                </div>
+            </div>
+
             <section>
                 <h3>1. Predmet i uloge u obradi podataka</h3>
-                <p>{{ app_name }} je poslovna aplikacija za evidenciju vozila, vozača, rokova, dokumenata, troškova i obavijesti. Firma koja koristi aplikaciju određuje koje podatke unosi i u koju poslovnu i zakonsku svrhu te je, u pravilu, kontrolor tih podataka. Pružalac aplikacije podatke obrađuje radi pružanja i održavanja usluge, prema uputama firme i ovim uvjetima.</p>
+                <p>{{ app_name }} je poslovna aplikacija za evidenciju vozila, vozača, rokova, dokumenata, troškova i obavijesti. Aplikaciju pruža {{ app_operator_name }}, {{ app_operator_status }}. Firma koja koristi aplikaciju određuje koje podatke unosi i u koju poslovnu i zakonsku svrhu te je, u pravilu, kontrolor tih podataka. Pružalac aplikacije podatke obrađuje radi pružanja i održavanja usluge, prema uputama firme i ovim uvjetima.</p>
                 <p>Korisnik potvrđuje da je ovlašten koristiti aplikaciju u ime svoje firme i da firma ima odgovarajući pravni osnov za obradu podataka vozača, zaposlenika i drugih osoba. Prihvat ovih uvjeta ne zamjenjuje obaveze poslodavca niti saglasnost osobe kada je ona po zakonu zaista potrebna.</p>
             </section>
 
@@ -71,7 +82,7 @@
             <section>
                 <h3>6. Prava osoba i zahtjevi</h3>
                 <p>U skladu sa Zakonom o zaštiti ličnih podataka Bosne i Hercegovine ("Službeni glasnik BiH", broj 12/25), osoba može, kada su ispunjeni zakonski uvjeti, tražiti pristup, ispravku, brisanje ili ograničenje obrade, uložiti prigovor, povući saglasnost kada se obrada zasniva na saglasnosti i podnijeti prigovor Agenciji za zaštitu ličnih podataka u BiH.</p>
-                <p>Za podatke koje je unijela firma, zahtjev se prvenstveno podnosi toj firmi. Za pitanja o radu aplikacije i privatnosti možete koristiti kontakt prikazan u aplikaciji ili telefon <strong>+387 62 142 600</strong>.</p>
+                <p>Za podatke koje je unijela firma, zahtjev se prvenstveno podnosi toj firmi. Za pitanja o radu aplikacije i privatnosti možete kontaktirati pružaoca aplikacije, {{ app_operator_name }}, na telefon <strong>{{ app_privacy_phone }}</strong>.</p>
             </section>
 
             <section>

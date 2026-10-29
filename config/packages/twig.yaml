@@ -2,6 +2,9 @@ twig:
     file_name_pattern: '*.twig'
     globals:
         app_name: '%app.name%'
+        app_operator_name: '%app.operator_name%'
+        app_operator_status: '%app.operator_status%'
+        app_privacy_phone: '%app.privacy_phone%'
         terms_version: '%app.terms_version%'
 
 when@test:

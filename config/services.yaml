@@ -1,6 +1,9 @@
 parameters:
     app.mail_from: 'noreply@kmmapps.com'
     app.name: 'Vozi Miško'
+    app.operator_name: 'Kemal Kapić'
+    app.operator_status: 'privatno lice iz Bosne i Hercegovine'
+    app.privacy_phone: '+387 62 142 600'
     app.terms_version: '2026-10-29'
     env(WEB_PUSH_PUBLIC_KEY): ''
     env(WEB_PUSH_PRIVATE_KEY): ''
