@@ -7,17 +7,17 @@
 {% set is_documents = current_route starts with 'document_' %}
 {% set is_notifications = current_route starts with 'notification_' %}
 
-<nav class="sidebar fixed z-[9999] flex-none w-[240px] ltr:border-r rtl:border-l dark:bg-darkborder border-black/10 transition-all duration-300 overflow-hidden">
-    <div class="h-full bg-white dark:bg-darklight">
-        <div class="p-4">
+<nav class="sidebar fixed z-[9999] flex-none w-[240px] ltr:border-r rtl:border-l dark:bg-darkborder border-black/10 transition-all duration-300 overflow-hidden" style="height: 100vh; height: 100dvh;">
+    <div class="flex h-full flex-col bg-white dark:bg-darklight">
+        <div class="shrink-0 p-4">
             <a href="{{ path('app_dashboard') }}" class="flex items-center justify-center gap-2 w-full main-logo">
                 <img src="{{ asset('assets/images/logo-light.png') }}" class="h-18" alt="{{ app_name }}">
                 <span class="text-lg font-semibold text-black dark:text-white"></span>
             </a>
         </div>
 
-        <div class="flex h-[calc(100vh-60px)] flex-col overflow-y-auto overflow-x-hidden px-5 pb-4">
-            <ul class="relative flex flex-1 flex-col gap-1">
+        <div class="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-5 pb-4">
+            <ul class="relative flex flex-col gap-1">
                 <h2 class="my-2 text-sm text-black/50 dark:text-white/30"><span>Osnovno</span></h2>
 
                 <li class="menu nav-item">
