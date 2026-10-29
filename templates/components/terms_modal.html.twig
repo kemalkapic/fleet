@@ -1,0 +1,134 @@
+<div
+    x-data="{ open: {{ terms_required ? 'true' : 'false' }}, required: {{ terms_required ? 'true' : 'false' }}, accepted: false }"
+    x-init="if (open) document.body.style.overflow = 'hidden'; $watch('open', value => document.body.style.overflow = value ? 'hidden' : '')"
+    @terms-open.window="open = true"
+    @keydown.escape.window="if (!required) open = false"
+    x-show="open"
+    x-cloak
+    class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/70 p-3 sm:p-6"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="terms-title"
+>
+    <section class="flex max-h-[94vh] w-full max-w-4xl flex-col overflow-hidden rounded border border-black/10 bg-white shadow-2xl dark:border-darkborder dark:bg-darklight">
+        <header class="flex shrink-0 items-start justify-between gap-4 border-b border-black/10 px-4 py-4 dark:border-darkborder sm:px-6">
+            <div>
+                <div class="mb-1 flex items-center gap-2 text-purple">
+                    <i class="ri-shield-check-line text-2xl" aria-hidden="true"></i>
+                    <span class="text-xs font-bold uppercase">Verzija 29.10.2026.</span>
+                </div>
+                <h2 id="terms-title" class="text-lg font-bold text-black dark:text-white sm:text-xl">Uvjeti korištenja i Obavijest o privatnosti</h2>
+                <p class="mt-1 text-xs text-muted sm:text-sm">Molimo pažljivo pročitajte kako se podaci obrađuju u aplikaciji {{ app_name }}.</p>
+            </div>
+            <button
+                x-show="!required"
+                type="button"
+                class="inline-flex size-9 shrink-0 items-center justify-center rounded bg-black/5 text-black/60 hover:bg-danger/10 hover:text-danger dark:bg-white/10 dark:text-white"
+                @click="open = false"
+                aria-label="Zatvori"
+            >
+                <i class="ri-close-line text-xl" aria-hidden="true"></i>
+            </button>
+        </header>
+
+        <div class="terms-content flex-1 overflow-y-auto px-4 py-4 text-sm leading-6 text-black/75 dark:text-white/75 sm:px-6 sm:py-5">
+            {% if terms_required %}
+                <div class="mb-5 border-l-4 border-purple bg-purple/5 px-4 py-3 text-sm">
+                    Prije nastavka rada potrebno je prihvatiti ove uvjete. Do tada ostale funkcije aplikacije nisu dostupne.
+                </div>
+            {% endif %}
+
+            <section>
+                <h3>1. Predmet i uloge u obradi podataka</h3>
+                <p>{{ app_name }} je poslovna aplikacija za evidenciju vozila, vozača, rokova, dokumenata, troškova i obavijesti. Firma koja koristi aplikaciju određuje koje podatke unosi i u koju poslovnu i zakonsku svrhu te je, u pravilu, kontrolor tih podataka. Pružalac aplikacije podatke obrađuje radi pružanja i održavanja usluge, prema uputama firme i ovim uvjetima.</p>
+                <p>Korisnik potvrđuje da je ovlašten koristiti aplikaciju u ime svoje firme i da firma ima odgovarajući pravni osnov za obradu podataka vozača, zaposlenika i drugih osoba. Prihvat ovih uvjeta ne zamjenjuje obaveze poslodavca niti saglasnost osobe kada je ona po zakonu zaista potrebna.</p>
+            </section>
+
+            <section>
+                <h3>2. Podaci i svrhe obrade</h3>
+                <p>Mogu se obrađivati podaci korisničkog računa, podaci o firmi, vozilima, vozačima, vozačkim dozvolama, rokovima važenja, evidencijama, gorivu, gumama, prilozima, obavijestima i aktivnosti prijave. Podaci se koriste isključivo za omogućavanje funkcija aplikacije, sigurnost sistema, podršku korisnicima, slanje ugovorenih obavijesti i ispunjavanje zakonskih obaveza.</p>
+                <p>Korisnik je dužan unositi samo podatke koji su potrebni za navedene svrhe, održavati ih tačnim i ograničiti pristup osobama kojima je pristup potreban za rad.</p>
+            </section>
+
+            <section>
+                <h3>3. Čitanje vozačke i saobraćajne dozvole pomoću AI-a</h3>
+                <p>AI očitanje je opcionalna pomoć pri unosu. Pokreće se tek kada korisnik izabere ili fotografiše dokument. Fotografija se privremeno sprema na server aplikacije, šalje servisu OpenRouter i odabranom pružaocu AI modela radi izdvajanja strukturiranih podataka, a zatim se briše iz privremene pohrane aplikacije nakon odgovora ili greške. Fotografija se ne sprema kao prilog uz vozilo ili vozača.</p>
+                <p>Za AI zahtjev aplikacija traži pružaoce koji ne prikupljaju podatke za treniranje i podržavaju obradu bez zadržavanja podataka. Ako takav pružalac nije dostupan, očitanje se neće izvršiti. OpenRouter i pružalac modela ipak tehnički primaju sliku radi obrade, a obrada se može izvršavati izvan Bosne i Hercegovine. Njihove zakonske, sigurnosne ili zaštitne obaveze mogu zahtijevati ograničenu obradu tehničkih podataka.</p>
+                <p>Korisnik mora provjeriti sve očitane vrijednosti prije spremanja. AI rezultat može biti nepotpun ili netačan i ne predstavlja službenu provjeru dokumenta.</p>
+            </section>
+
+            <section>
+                <h3>4. Prilozi i čuvanje podataka</h3>
+                <p>Dokumenti koje korisnik svjesno doda kao prilog čuvaju se dok ih ovlašteni korisnik ne izbriše, dok traje korištenje usluge ili dok postoji zakonska ili ugovorna potreba. Poslovne evidencije i zapisi dostave obavijesti čuvaju se u mjeri potrebnoj za rad sistema, dokazivanje izvršenih radnji, sigurnost i rješavanje sporova.</p>
+                <p>Primjenjuju se razumne tehničke i organizacijske mjere zaštite. Nijedan internetski sistem ne može garantovati apsolutnu sigurnost, pa je korisnik odgovoran za čuvanje pristupnih podataka i pravovremeno ukidanje pristupa osobama koje ga više ne trebaju.</p>
+            </section>
+
+            <section>
+                <h3>5. Obavijesti i vanjski tehnički servisi</h3>
+                <p>Za slanje email i web push obavijesti nužno se obrađuju kontaktni podaci, sadržaj obavijesti i tehnički identifikatori uređaja. Ti se podaci prosljeđuju samo servisima potrebnim za isporuku, hosting, sigurnost ili AI očitanje. Podaci uneseni u aplikaciju ne prodaju se niti se koriste za oglašavanje.</p>
+            </section>
+
+            <section>
+                <h3>6. Prava osoba i zahtjevi</h3>
+                <p>U skladu sa Zakonom o zaštiti ličnih podataka Bosne i Hercegovine ("Službeni glasnik BiH", broj 12/25), osoba može, kada su ispunjeni zakonski uvjeti, tražiti pristup, ispravku, brisanje ili ograničenje obrade, uložiti prigovor, povući saglasnost kada se obrada zasniva na saglasnosti i podnijeti prigovor Agenciji za zaštitu ličnih podataka u BiH.</p>
+                <p>Za podatke koje je unijela firma, zahtjev se prvenstveno podnosi toj firmi. Za pitanja o radu aplikacije i privatnosti možete koristiti kontakt prikazan u aplikaciji ili telefon <strong>+387 62 142 600</strong>.</p>
+            </section>
+
+            <section>
+                <h3>7. Pravila korištenja i dostupnost</h3>
+                <p>Nije dozvoljen neovlašten pristup, unos podataka bez pravnog osnova, pokušaj narušavanja sigurnosti, dijeljenje pristupnih podataka ili korištenje aplikacije protivno zakonu. Korisnik ostaje odgovoran za poslovne odluke, tačnost podataka i pravovremeno postupanje po rokovima; aplikacija i obavijesti služe kao pomoćna evidencija.</p>
+                <p>Usluga može privremeno biti nedostupna zbog održavanja, smetnji hostinga ili vanjskih servisa. Pružalac će nastojati očuvati dostupnost i integritet podataka, ali korisnik treba održavati vlastite zakonom potrebne evidencije i ne oslanjati se isključivo na jednu obavijest.</p>
+            </section>
+
+            <section>
+                <h3>8. Izmjene uvjeta</h3>
+                <p>Ovi uvjeti vrijede od 29.10.2026. Kod bitnih izmjena bit će objavljena nova verzija i od korisnika se može ponovo zatražiti prihvat. Evidentiraju se korisnik, verzija uvjeta i vrijeme prihvata radi dokazivanja da je obavijest prikazana i prihvaćena.</p>
+            </section>
+
+            <div class="mt-5 rounded bg-black/[0.035] p-3 text-xs text-muted dark:bg-white/[0.05]">
+                Relevantni izvori: Zakon o zaštiti ličnih podataka BiH ("Službeni glasnik BiH", 12/25), upute Agencije za zaštitu ličnih podataka BiH i pravila privatnosti servisa OpenRouter.
+            </div>
+        </div>
+
+        <footer class="shrink-0 border-t border-black/10 bg-white px-4 py-4 dark:border-darkborder dark:bg-darklight sm:px-6">
+            {% if terms_required %}
+                <form method="post" action="{{ path('terms_accept') }}" class="space-y-3">
+                    <input type="hidden" name="_token" value="{{ csrf_token('accept_terms_' ~ terms_version) }}">
+                    <label class="flex cursor-pointer items-start gap-3 rounded border border-black/10 p-3 dark:border-darkborder">
+                        <input type="checkbox" name="accept_terms" value="1" x-model="accepted" class="mt-0.5 size-4 shrink-0 accent-purple">
+                        <span class="text-xs leading-5 text-black/80 dark:text-white/80">Pročitao/la sam i prihvatam Uvjete korištenja i Obavijest o privatnosti te potvrđujem da sam ovlašten/a unositi podatke kojima pristupam.</span>
+                    </label>
+                    <div class="flex items-center justify-between gap-3">
+                        <a href="{{ path('app_logout') }}" class="inline-flex items-center gap-2 text-xs font-semibold text-danger">
+                            <i class="ri-logout-box-r-line" aria-hidden="true"></i>
+                            Odjavi se
+                        </a>
+                        <button type="submit" :disabled="!accepted" class="inline-flex items-center gap-2 rounded bg-purple px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">
+                            <i class="ri-check-line text-lg" aria-hidden="true"></i>
+                            Prihvatam i nastavi
+                        </button>
+                    </div>
+                </form>
+            {% else %}
+                <div class="flex items-center justify-between gap-3">
+                    <span class="text-xs text-muted">
+                        {% if app.user.termsAcceptedAt %}
+                            Prihvaćeno {{ app.user.termsAcceptedAt|date('d.m.Y. H:i') }}
+                        {% endif %}
+                    </span>
+                    <button type="button" class="inline-flex items-center gap-2 rounded bg-purple px-4 py-2 text-sm font-semibold text-white" @click="open = false">
+                        <i class="ri-check-line" aria-hidden="true"></i>
+                        Zatvori
+                    </button>
+                </div>
+            {% endif %}
+        </footer>
+    </section>
+</div>
+
+<style>
+    .terms-content section + section { margin-top: 1.25rem; }
+    .terms-content h3 { margin-bottom: 0.35rem; color: #111827; font-size: 0.92rem; font-weight: 700; }
+    .terms-content p + p { margin-top: 0.45rem; }
+    .dark .terms-content h3 { color: #fff; }
+</style>

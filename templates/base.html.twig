@@ -187,6 +187,12 @@
             </div>
         </div>
 
+        {% if app.user %}
+            {% include 'components/terms_modal.html.twig' with {
+                terms_required: not app.user.hasAcceptedTerms(terms_version)
+            } only %}
+        {% endif %}
+
         <script src="{{ asset('assets/js/alpine-collaspe.min.js') }}"></script>
         <script src="{{ asset('assets/js/alpine-persist.min.js') }}"></script>
         <script src="{{ asset('assets/js/alpine.min.js') }}" defer></script>

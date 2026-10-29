@@ -111,6 +111,10 @@ class OpenRouterDocumentDataExtractor implements DocumentDataExtractorInterface
                         ],
                     ],
                     'temperature' => 0,
+                    'provider' => [
+                        'data_collection' => 'deny',
+                        'zdr' => true,
+                    ],
                 ],
                 'timeout' => 60,
             ]);

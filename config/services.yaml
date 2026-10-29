@@ -1,6 +1,7 @@
 parameters:
     app.mail_from: 'noreply@kmmapps.com'
     app.name: 'Vozi Miško'
+    app.terms_version: '2026-10-29'
     env(WEB_PUSH_PUBLIC_KEY): ''
     env(WEB_PUSH_PRIVATE_KEY): ''
     env(WEB_PUSH_SUBJECT): ''
@@ -12,6 +13,7 @@ services:
         bind:
             string $projectDir: '%kernel.project_dir%'
             string $appName: '%app.name%'
+            string $termsVersion: '%app.terms_version%'
             string $mailFrom: '%app.mail_from%'
             string $webPushPublicKey: '%env(WEB_PUSH_PUBLIC_KEY)%'
             string $webPushPrivateKey: '%env(WEB_PUSH_PRIVATE_KEY)%'

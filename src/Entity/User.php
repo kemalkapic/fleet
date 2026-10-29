@@ -53,6 +53,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastActiveAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $termsAcceptedAt = null;
+
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $termsAcceptedVersion = null;
+
     public function __construct()
     {
         $now = new \DateTimeImmutable();
@@ -209,6 +215,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function recordActivity(?\DateTimeImmutable $at = null): self
     {
         $this->lastActiveAt = $at ?? new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getTermsAcceptedAt(): ?\DateTimeImmutable
+    {
+        return $this->termsAcceptedAt;
+    }
+
+    public function getTermsAcceptedVersion(): ?string
+    {
+        return $this->termsAcceptedVersion;
+    }
+
+    public function hasAcceptedTerms(string $version): bool
+    {
+        return $this->termsAcceptedAt !== null && $this->termsAcceptedVersion === $version;
+    }
+
+    public function acceptTerms(string $version): self
+    {
+        $this->termsAcceptedAt = new \DateTimeImmutable();
+        $this->termsAcceptedVersion = $version;
+        $this->touch();
 
         return $this;
     }

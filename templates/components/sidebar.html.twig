@@ -101,6 +101,17 @@
                 {% endif %}
 
             </ul>
+
+            {% if app.user %}
+                <div class="mt-6 border-t border-black/10 pt-3 dark:border-darkborder">
+                    <button type="button" class="nav-link group flex w-full items-center text-left" @click="$dispatch('terms-open')">
+                        <div class="flex items-center">
+                            <i class="ri-information-line text-xl"></i>
+                            <span class="ltr:pl-1.5 rtl:pr-1.5">Uvjeti i privatnost</span>
+                        </div>
+                    </button>
+                </div>
+            {% endif %}
         </div>
     </div>
 </nav>
