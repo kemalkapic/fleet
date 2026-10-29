@@ -12,6 +12,10 @@
                 display: none;
             }
 
+            .app-header {
+                z-index: 1000;
+            }
+
             .notification-popup {
                 position: fixed;
                 top: 4.25rem;
@@ -101,7 +105,7 @@
                 {% include 'components/sidebar.html.twig' %}
 
                 <div class="flex min-h-screen flex-1 flex-col min-w-0 main-content">
-                    <header class="sticky top-0 z-50 bg-white border-b dark:bg-darklight dark:border-darkborder border-black/10">
+                    <header class="app-header sticky top-0 bg-white border-b dark:bg-darklight dark:border-darkborder border-black/10">
                         <div class="flex items-center justify-between h-16 px-4 sm:px-6">
                             <div class="flex items-center gap-3">
                                 <button type="button" class="flex items-center justify-center rounded size-10 text-black/70 bg-black/5 dark:text-white dark:bg-white/10 lg:hidden" @click="$store.app.toggleSidebar()" aria-label="Otvori meni">
