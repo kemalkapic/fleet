@@ -209,7 +209,7 @@
         <script src="{{ asset('assets/js/custom.js') }}"></script>
         {% if app.user %}
             <script>
-                (() => {
+                const initializeNotificationCenter = () => {
                     const center = document.getElementById('notification-center');
                     if (!center) return;
 
@@ -219,6 +219,7 @@
                     const pushButtonLabel = document.getElementById('push-toggle-label');
                     const pushStatus = document.getElementById('push-status');
                     const pushMessage = document.getElementById('push-message');
+                    if (!badge || !list || !pushButton || !pushButtonLabel || !pushStatus || !pushMessage) return;
 
                     const refreshInbox = async () => {
                         try {
@@ -311,7 +312,11 @@
                     }
 
                     window.setInterval(refreshInbox, 60000);
-                })();
+                };
+
+                document.addEventListener('alpine:initialized', () => {
+                    window.requestAnimationFrame(initializeNotificationCenter);
+                }, { once: true });
             </script>
         {% endif %}
         {% block javascripts %}{% endblock %}
