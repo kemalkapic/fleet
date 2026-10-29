@@ -33,8 +33,14 @@
 
         <div class="terms-content min-h-0 flex-1 overscroll-contain overflow-y-auto px-4 py-4 text-sm leading-6 text-black/75 dark:text-white/75 sm:px-6 sm:py-5">
             {% if terms_required %}
-                <div class="mb-5 border-l-4 border-purple bg-purple/5 px-4 py-3 text-sm">
-                    Prije nastavka rada potrebno je prihvatiti ove uvjete. Do tada ostale funkcije aplikacije nisu dostupne.
+                <div class="terms-required-notice mb-5 flex items-start gap-3 rounded px-4 py-3.5">
+                    <span class="terms-required-notice-icon inline-flex size-9 shrink-0 items-center justify-center rounded" aria-hidden="true">
+                        <i class="ri-lock-2-line text-lg"></i>
+                    </span>
+                    <div>
+                        <strong class="block text-sm font-bold">Potrebna potvrda</strong>
+                        <p class="mt-0.5 text-xs leading-5 sm:text-sm">Prije nastavka rada potrebno je prihvatiti ove uvjete. Do tada ostale funkcije aplikacije nisu dostupne.</p>
+                    </div>
                 </div>
             {% endif %}
 
@@ -147,6 +153,20 @@
         background: rgba(15, 23, 42, 0.68);
         backdrop-filter: blur(3px);
         -webkit-backdrop-filter: blur(3px);
+    }
+    .terms-required-notice {
+        border: 1px solid rgba(93, 63, 211, 0.3);
+        border-left: 4px solid #5d3fd3;
+        background: rgba(93, 63, 211, 0.1);
+        color: #35248f;
+    }
+    .terms-required-notice-icon {
+        background: #5d3fd3;
+        color: #fff;
+    }
+    .dark .terms-required-notice {
+        background: rgba(129, 105, 230, 0.16);
+        color: #d8d0ff;
     }
     .terms-content {
         min-height: 0;
