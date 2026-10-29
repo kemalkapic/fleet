@@ -123,7 +123,10 @@
                             <div class="flex items-center gap-2 sm:gap-3">
                                 {% if app.user %}
                                     {% set notification_box = notification_inbox() %}
-                                    <div class="relative" x-data="{ notificationOpen: false }" @click.outside="notificationOpen = false" id="notification-center"
+                                    <div class="relative"
+                                         x-data="{ notificationOpen: {{ app.request.query.get('notifications') == 'open' ? 'true' : 'false' }} }"
+                                         x-init="if (notificationOpen) { const url = new URL(window.location.href); url.searchParams.delete('notifications'); window.history.replaceState({}, '', url.pathname + url.search + url.hash); }"
+                                         @click.outside="notificationOpen = false" id="notification-center"
                                          data-fragment-url="{{ path('notification_fragment') }}"
                                          data-public-key="{{ notification_box.publicKey }}"
                                          data-push-configured="{{ notification_box.pushConfigured ? '1' : '0' }}"

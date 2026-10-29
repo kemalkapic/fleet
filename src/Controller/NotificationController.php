@@ -62,8 +62,19 @@ class NotificationController extends AbstractController
         $item->markRead();
         $entityManager->flush();
         $targetUrl = $item->getTargetUrl();
+        $targetUrl = $targetUrl !== null && str_starts_with($targetUrl, '/') && !str_starts_with($targetUrl, '//')
+            ? $targetUrl
+            : $this->generateUrl('notification_index');
 
-        return new RedirectResponse($targetUrl !== null && str_starts_with($targetUrl, '/') && !str_starts_with($targetUrl, '//') ? $targetUrl : $this->generateUrl('notification_index'));
+        return new RedirectResponse($this->withNotificationPopup($targetUrl));
+    }
+
+    private function withNotificationPopup(string $url): string
+    {
+        [$path, $fragment] = array_pad(explode('#', $url, 2), 2, null);
+        $path .= str_contains($path, '?') ? '&notifications=open' : '?notifications=open';
+
+        return $fragment !== null ? $path.'#'.$fragment : $path;
     }
 
     private function requireUser(): User

@@ -1,3 +1,11 @@
+self.addEventListener('install', () => {
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(self.clients.claim());
+});
+
 self.addEventListener('push', (event) => {
     let data = {};
     try {
@@ -24,7 +32,11 @@ self.addEventListener('notificationclick', (event) => {
     const targetUrl = new URL(event.notification.data?.url || '/notifications', self.location.origin).href;
 
     event.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-        const existing = windowClients.find((client) => client.url === targetUrl);
-        return existing ? existing.focus() : clients.openWindow(targetUrl);
+        const existing = windowClients.find((client) => new URL(client.url).origin === self.location.origin);
+        if (!existing) {
+            return clients.openWindow(targetUrl);
+        }
+
+        return existing.navigate(targetUrl).then((client) => client ? client.focus() : clients.openWindow(targetUrl));
     }));
 });
