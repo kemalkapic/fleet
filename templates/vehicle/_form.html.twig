@@ -16,8 +16,39 @@
     }
 
     .document-scan-file input[type="file"] {
-        width: 100%;
+        min-width: 0;
+        flex: 1;
         font-size: 0.875rem;
+    }
+
+    .document-scan-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .document-camera-button {
+        display: none;
+        width: 42px;
+        height: 42px;
+        flex: 0 0 42px;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 6px;
+        background: #6a5af9;
+        color: #fff;
+        font-size: 1.25rem;
+        cursor: pointer;
+    }
+
+    .document-camera-button:disabled {
+        cursor: wait;
+        opacity: 0.65;
+    }
+
+    .document-scan-file input[data-camera-input] {
+        display: none;
     }
 
     .document-scan-file input[type="file"]::file-selector-button {
@@ -30,6 +61,12 @@
         font-size: 0.8125rem;
         font-weight: 600;
         cursor: pointer;
+    }
+
+    @media (max-width: 767px) {
+        .document-camera-button {
+            display: inline-flex;
+        }
     }
 
     @media (min-width: 768px) {
@@ -83,7 +120,13 @@
                         </div>
 
                         <div class="document-scan-file mt-3 rounded border border-purple/20 bg-white p-3">
-                            <input type="file" accept="image/jpeg,image/png,image/webp" data-scan-input>
+                            <div class="document-scan-actions">
+                                <input type="file" accept="image/jpeg,image/png,image/webp" data-scan-input>
+                                <button type="button" class="document-camera-button" data-camera-button title="Slikaj kamerom" aria-label="Slikaj kamerom">
+                                    <i class="ri-camera-line" aria-hidden="true"></i>
+                                </button>
+                                <input type="file" accept="image/*" capture="environment" data-camera-input>
+                            </div>
                         </div>
                     </div>
 
@@ -302,13 +345,15 @@
 
             const form = panel.closest('form');
             const input = panel.querySelector('[data-scan-input]');
+            const cameraInput = panel.querySelector('[data-camera-input]');
+            const cameraButton = panel.querySelector('[data-camera-button]');
             const progress = panel.querySelector('[data-scan-progress]');
             const status = panel.querySelector('[data-scan-status]');
             const warnings = panel.querySelector('[data-scan-warnings]');
             const readFields = panel.querySelector('[data-scan-read-fields]');
             const readFieldsList = panel.querySelector('[data-scan-read-fields-list]');
 
-            if (!form || !input || !progress || !status || !warnings || !readFields || !readFieldsList) {
+            if (!form || !input || !cameraInput || !cameraButton || !progress || !status || !warnings || !readFields || !readFieldsList) {
                 return;
             }
 
@@ -372,6 +417,8 @@
                 const body = new FormData();
                 body.append('document', file);
                 input.disabled = true;
+                cameraInput.disabled = true;
+                cameraButton.disabled = true;
                 progress.classList.remove('hidden');
                 showStatus('Čitam dokument...');
                 warnings.classList.add('hidden');
@@ -410,13 +457,23 @@
                     showStatus(error.message, true);
                 } finally {
                     input.disabled = false;
+                    cameraInput.disabled = false;
+                    cameraButton.disabled = false;
                     input.value = '';
+                    cameraInput.value = '';
                     progress.classList.add('hidden');
                 }
             };
 
             input.addEventListener('change', () => {
                 const file = input.files && input.files[0];
+                scanFile(file);
+            });
+
+            cameraButton.addEventListener('click', () => cameraInput.click());
+
+            cameraInput.addEventListener('change', () => {
+                const file = cameraInput.files && cameraInput.files[0];
                 scanFile(file);
             });
         })();
