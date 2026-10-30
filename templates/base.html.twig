@@ -48,6 +48,11 @@
             .notification-popup-item time { display: block; margin-top: 0.25rem; color: #9ca3af; font-size: 0.65rem; }
             .notification-unread-dot { width: 0.45rem; height: 0.45rem; margin-top: 0.4rem; flex: 0 0 0.45rem; border-radius: 9999px; background: #5d3fd3; }
 
+            .notification-renew-dialog {
+                width: calc(100vw - 2rem);
+                max-width: 46rem;
+            }
+
             .login-contact-links {
                 display: flex;
                 align-items: center;
@@ -90,6 +95,16 @@
                     left: auto;
                     right: 1.5rem;
                     width: 390px;
+                }
+
+                .notification-renew-dialog {
+                    width: 78vw;
+                }
+            }
+
+            @media (min-width: 1024px) {
+                .notification-renew-dialog {
+                    width: 58vw;
                 }
             }
         </style>

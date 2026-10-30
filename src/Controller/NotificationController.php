@@ -52,7 +52,12 @@ class NotificationController extends AbstractController
     }
 
     #[Route('/{id}/open', name: 'open', requirements: ['id' => '\\d+'], methods: ['GET'])]
-    public function open(int $id, UserNotificationRepository $notifications, EntityManagerInterface $entityManager): RedirectResponse
+    public function open(
+        int $id,
+        Request $request,
+        UserNotificationRepository $notifications,
+        EntityManagerInterface $entityManager,
+    ): RedirectResponse
     {
         $item = $notifications->findOneForUser($id, $this->requireUser());
         if ($item === null) {
@@ -66,7 +71,11 @@ class NotificationController extends AbstractController
             ? $targetUrl
             : $this->generateUrl('notification_index');
 
-        return new RedirectResponse($this->withNotificationPopup($targetUrl));
+        return new RedirectResponse(
+            $request->query->get('source') === 'inbox'
+                ? $targetUrl
+                : $this->withNotificationPopup($targetUrl),
+        );
     }
 
     #[Route('/{id}/renew', name: 'renew', requirements: ['id' => '\\d+'], methods: ['POST'])]

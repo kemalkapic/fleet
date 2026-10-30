@@ -1,30 +1,33 @@
-<dialog id="notification-renew-dialog" class="w-[calc(100%-2rem)] max-w-md rounded-lg border-0 bg-white p-0 shadow-2xl backdrop:bg-black/60 dark:bg-darklight">
+<dialog id="notification-renew-dialog" class="notification-renew-dialog rounded-lg border-0 bg-white p-0 shadow-2xl backdrop:bg-black/60 dark:bg-darklight">
     <form method="post" id="notification-renew-form">
-        <div class="flex items-center justify-between border-b border-black/10 px-5 py-4 dark:border-darkborder">
+        <div class="flex items-center justify-between border-b border-black/10 px-4 py-3 dark:border-darkborder">
             <div>
-                <h2 class="text-base font-semibold text-black dark:text-white">Produži rok evidencije</h2>
-                <p class="mt-1 text-xs text-muted" id="notification-renew-owner"></p>
+                <h2 class="text-sm font-semibold text-black dark:text-white">Produži rok evidencije</h2>
+                <p class="mt-0.5 text-[11px] text-muted" id="notification-renew-owner"></p>
             </div>
-            <button type="button" class="inline-flex size-9 items-center justify-center rounded bg-black/5 text-xl text-muted hover:text-black dark:bg-white/10 dark:hover:text-white" data-renew-close aria-label="Zatvori">
+            <button type="button" class="inline-flex size-8 items-center justify-center rounded bg-black/5 text-lg text-muted hover:text-black dark:bg-white/10 dark:hover:text-white" data-renew-close aria-label="Zatvori">
                 <i class="ri-close-line" aria-hidden="true"></i>
             </button>
         </div>
-        <div class="space-y-4 p-5">
-            <div class="rounded border border-purple/15 bg-purple/5 px-3 py-2 text-sm">
-                <strong class="block text-black dark:text-white" id="notification-renew-title"></strong>
-                <span class="mt-1 block text-xs text-muted">Trenutni rok: <span id="notification-renew-current"></span></span>
+        <div class="space-y-3 p-4">
+            <div class="rounded border border-purple/15 bg-purple/5 px-3 py-2 text-xs">
+                <strong class="block text-xs text-black dark:text-white" id="notification-renew-title"></strong>
+                <span class="mt-0.5 block text-[11px] text-muted">Trenutni rok: <span id="notification-renew-current"></span></span>
             </div>
             <div>
-                <label for="notification-renew-date" class="mb-1.5 block text-xs font-semibold text-black dark:text-white">Novi datum isteka</label>
-                <input type="date" id="notification-renew-date" name="validUntil" required class="form-input w-full rounded border border-black/10 px-3 py-2.5 dark:border-darkborder dark:bg-dark">
+                <label for="notification-renew-date" class="mb-1 block text-[11px] font-semibold text-black dark:text-white">Novi datum isteka</label>
+                <input type="date" id="notification-renew-date" name="validUntil" required class="form-input w-full rounded border border-black/10 px-3 py-2 text-xs dark:border-darkborder dark:bg-dark">
             </div>
             <input type="hidden" name="_token" id="notification-renew-token">
         </div>
-        <div class="flex gap-2 border-t border-black/10 px-5 py-4 dark:border-darkborder">
-            <button type="button" class="inline-flex flex-1 items-center justify-center rounded bg-black/5 px-4 py-2.5 text-sm font-semibold text-muted dark:bg-white/10" data-renew-close>Odustani</button>
-            <button type="submit" class="inline-flex flex-1 items-center justify-center gap-2 rounded bg-purple px-4 py-2.5 text-sm font-semibold text-white">
-                <i class="ri-save-line" aria-hidden="true"></i>
-                Spremi novi rok
+        <div class="flex items-center justify-end gap-2 border-t border-black/10 px-4 py-3 dark:border-darkborder">
+            <button type="button" class="inline-flex items-center justify-center rounded px-3 py-2 text-xs font-semibold text-muted transition hover:bg-black/5 hover:text-black dark:hover:bg-white/10 dark:hover:text-white" data-renew-close>Odustani</button>
+            <button type="submit" class="inline-flex items-center justify-center gap-1.5 rounded bg-purple px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-purple/90">
+                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M5 4h12l2 2v14H5V4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                    <path d="M8 4v6h8V4M8 20v-6h8v6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                </svg>
+                Spremi
             </button>
         </div>
     </form>
