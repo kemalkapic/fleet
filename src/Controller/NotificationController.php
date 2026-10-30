@@ -69,6 +69,54 @@ class NotificationController extends AbstractController
         return new RedirectResponse($this->withNotificationPopup($targetUrl));
     }
 
+    #[Route('/{id}/renew', name: 'renew', requirements: ['id' => '\\d+'], methods: ['POST'])]
+    public function renew(
+        int $id,
+        Request $request,
+        UserNotificationRepository $notifications,
+        EntityManagerInterface $entityManager,
+    ): RedirectResponse {
+        $this->denyAccessUnlessGranted('ROLE_COMPANY_ADMIN');
+
+        $item = $notifications->findOneForUser($id, $this->requireUser());
+        if ($item === null || !$item->isDocumentRenewalAvailable()) {
+            $this->addFlash('error', 'Ova evidencija je već produžena ili više nije dostupna.');
+
+            return $this->redirectToRoute('notification_index');
+        }
+
+        if (!$this->isCsrfTokenValid('renew_notification_'.$item->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $document = $item->getDocument();
+        $dateValue = (string) $request->request->get('validUntil');
+        $validUntil = \DateTimeImmutable::createFromFormat('!Y-m-d', $dateValue);
+        $dateErrors = \DateTimeImmutable::getLastErrors();
+
+        if (!$validUntil instanceof \DateTimeImmutable
+            || ($dateErrors !== false && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))
+            || $validUntil->format('Y-m-d') !== $dateValue
+            || $validUntil <= $document->getValidUntil()
+        ) {
+            $this->addFlash('error', 'Novi datum isteka mora biti poslije trenutnog roka.');
+
+            return $this->redirectToRoute('notification_index');
+        }
+
+        $document->setValidUntil($validUntil);
+        $item->markRead();
+        $entityManager->flush();
+
+        $this->addFlash('success', sprintf(
+            'Rok za evidenciju "%s" produžen je do %s.',
+            $document->getTypeLabel(),
+            $validUntil->format('d.m.Y'),
+        ));
+
+        return $this->redirectToRoute('notification_index');
+    }
+
     private function withNotificationPopup(string $url): string
     {
         [$path, $fragment] = array_pad(explode('#', $url, 2), 2, null);

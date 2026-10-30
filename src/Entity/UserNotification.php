@@ -77,6 +77,20 @@ class UserNotification
     public function markRead(): self { $this->readAt ??= new \DateTimeImmutable(); return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
 
+    public function isDocumentRenewalAvailable(): bool
+    {
+        if (!$this->document instanceof FleetDocument || $this->document->isDeleted()) {
+            return false;
+        }
+
+        if (!preg_match('/^document_(\d+)_(\d{8})_-?\d+$/', $this->eventKey, $matches)) {
+            return false;
+        }
+
+        return (int) $matches[1] === $this->document->getId()
+            && $matches[2] === $this->document->getValidUntil()->format('Ymd');
+    }
+
     /** @return list<string> */
     public function getDeliveryChannels(): array
     {

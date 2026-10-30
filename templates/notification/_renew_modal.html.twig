@@ -1,0 +1,72 @@
+<dialog id="notification-renew-dialog" class="w-[calc(100%-2rem)] max-w-md rounded-lg border-0 bg-white p-0 shadow-2xl backdrop:bg-black/60 dark:bg-darklight">
+    <form method="post" id="notification-renew-form">
+        <div class="flex items-center justify-between border-b border-black/10 px-5 py-4 dark:border-darkborder">
+            <div>
+                <h2 class="text-base font-semibold text-black dark:text-white">Produži rok evidencije</h2>
+                <p class="mt-1 text-xs text-muted" id="notification-renew-owner"></p>
+            </div>
+            <button type="button" class="inline-flex size-9 items-center justify-center rounded bg-black/5 text-xl text-muted hover:text-black dark:bg-white/10 dark:hover:text-white" data-renew-close aria-label="Zatvori">
+                <i class="ri-close-line" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="space-y-4 p-5">
+            <div class="rounded border border-purple/15 bg-purple/5 px-3 py-2 text-sm">
+                <strong class="block text-black dark:text-white" id="notification-renew-title"></strong>
+                <span class="mt-1 block text-xs text-muted">Trenutni rok: <span id="notification-renew-current"></span></span>
+            </div>
+            <div>
+                <label for="notification-renew-date" class="mb-1.5 block text-xs font-semibold text-black dark:text-white">Novi datum isteka</label>
+                <input type="date" id="notification-renew-date" name="validUntil" required class="form-input w-full rounded border border-black/10 px-3 py-2.5 dark:border-darkborder dark:bg-dark">
+            </div>
+            <input type="hidden" name="_token" id="notification-renew-token">
+        </div>
+        <div class="flex gap-2 border-t border-black/10 px-5 py-4 dark:border-darkborder">
+            <button type="button" class="inline-flex flex-1 items-center justify-center rounded bg-black/5 px-4 py-2.5 text-sm font-semibold text-muted dark:bg-white/10" data-renew-close>Odustani</button>
+            <button type="submit" class="inline-flex flex-1 items-center justify-center gap-2 rounded bg-purple px-4 py-2.5 text-sm font-semibold text-white">
+                <i class="ri-save-line" aria-hidden="true"></i>
+                Spremi novi rok
+            </button>
+        </div>
+    </form>
+</dialog>
+
+<script>
+    (() => {
+        const dialog = document.getElementById('notification-renew-dialog');
+        const form = document.getElementById('notification-renew-form');
+        const title = document.getElementById('notification-renew-title');
+        const owner = document.getElementById('notification-renew-owner');
+        const current = document.getElementById('notification-renew-current');
+        const date = document.getElementById('notification-renew-date');
+        const token = document.getElementById('notification-renew-token');
+
+        if (!dialog || !form || !title || !owner || !current || !date || !token) {
+            return;
+        }
+
+        document.addEventListener('click', (event) => {
+            const openButton = event.target.closest('[data-renew-notification]');
+            if (openButton) {
+                form.action = openButton.dataset.renewUrl;
+                title.textContent = openButton.dataset.renewTitle;
+                owner.textContent = openButton.dataset.renewOwner;
+                current.textContent = openButton.dataset.renewCurrent;
+                date.min = openButton.dataset.renewMin;
+                date.value = '';
+                token.value = openButton.dataset.renewToken;
+                dialog.showModal();
+                return;
+            }
+
+            if (event.target.closest('[data-renew-close]')) {
+                dialog.close();
+            }
+        });
+
+        dialog.addEventListener('click', (event) => {
+            if (event.target === dialog) {
+                dialog.close();
+            }
+        });
+    })();
+</script>

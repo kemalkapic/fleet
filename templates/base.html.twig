@@ -33,9 +33,7 @@
             }
 
             .notification-popup-item {
-                display: flex;
-                gap: 0.75rem;
-                align-items: flex-start;
+                display: block;
                 padding: 0.8rem 1rem;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.08);
                 background: #fff;
@@ -201,6 +199,7 @@
             {% include 'components/terms_modal.html.twig' with {
                 terms_required: not app.user.hasAcceptedTerms(terms_version)
             } only %}
+            {% include 'notification/_renew_modal.html.twig' %}
         {% endif %}
 
         <script src="{{ asset('assets/js/alpine-collaspe.min.js') }}"></script>

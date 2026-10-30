@@ -1,5 +1,6 @@
 {% for item in items %}
-    <a href="{{ path('notification_open', {id: item.id}) }}" class="notification-popup-item {{ item.read ? '' : 'is-unread' }}">
+    <div class="notification-popup-item block {{ item.read ? '' : 'is-unread' }}">
+    <a href="{{ path('notification_open', {id: item.id}) }}" class="flex gap-3">
         <span class="notification-popup-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none"><path d="M12 3a6 6 0 0 0-6 6v3.2L4.5 15a1 1 0 0 0 .9 1.5h13.2a1 1 0 0 0 .9-1.5L18 12.2V9a6 6 0 0 0-6-6Z" stroke="currentColor" stroke-width="1.8"/><path d="M9.8 19a2.5 2.5 0 0 0 4.4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         </span>
@@ -17,6 +18,21 @@
         </span>
         {% if not item.read %}<span class="notification-unread-dot" aria-label="Nepročitano"></span>{% endif %}
     </a>
+    {% if item.documentRenewalAvailable %}
+        <button type="button"
+                class="ml-11 mt-2 inline-flex items-center gap-1.5 rounded bg-purple/10 px-2.5 py-1.5 text-[11px] font-semibold text-purple"
+                data-renew-notification
+                data-renew-url="{{ path('notification_renew', {id: item.id}) }}"
+                data-renew-token="{{ csrf_token('renew_notification_' ~ item.id) }}"
+                data-renew-title="{{ item.document.typeLabel }}"
+                data-renew-owner="{{ item.document.ownerLabel }}"
+                data-renew-current="{{ item.document.validUntil|date('d.m.Y') }}"
+                data-renew-min="{{ item.document.validUntil|date_modify('+1 day')|date('Y-m-d') }}">
+            <i class="ri-calendar-check-line text-sm" aria-hidden="true"></i>
+            Produži rok
+        </button>
+    {% endif %}
+    </div>
 {% else %}
     <div class="p-6 text-center text-sm text-muted">Još nema obavijesti.</div>
 {% endfor %}

@@ -21,7 +21,8 @@
 
     <section class="mt-4 grid gap-3 rounded bg-black/[0.025] p-3 dark:bg-white/[0.03]">
         {% for item in notifications %}
-            <a href="{{ path('notification_open', {id: item.id}) }}" class="flex gap-3 rounded border bg-white p-4 shadow-sm transition hover:border-purple/40 hover:shadow {{ item.read ? 'border-black/10 dark:border-darkborder dark:bg-darklight' : 'border-purple/30 dark:bg-darklight' }}">
+            <article class="flex flex-col gap-3 rounded border bg-white p-4 shadow-sm transition hover:border-purple/40 hover:shadow sm:flex-row sm:items-center {{ item.read ? 'border-black/10 dark:border-darkborder dark:bg-darklight' : 'border-purple/30 dark:bg-darklight' }}">
+            <a href="{{ path('notification_open', {id: item.id}) }}" class="flex min-w-0 flex-1 gap-3">
                 <span class="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded bg-purple/10 text-purple">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3a6 6 0 0 0-6 6v3.2L4.5 15a1 1 0 0 0 .9 1.5h13.2a1 1 0 0 0 .9-1.5L18 12.2V9a6 6 0 0 0-6-6Z" stroke="currentColor" stroke-width="1.8"/><path d="M9.8 19a2.5 2.5 0 0 0 4.4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                 </span>
@@ -41,6 +42,21 @@
                     {% endif %}
                 </span>
             </a>
+            {% if item.documentRenewalAvailable %}
+                <button type="button"
+                        class="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded bg-purple px-3 py-2 text-xs font-semibold text-white sm:w-auto"
+                        data-renew-notification
+                        data-renew-url="{{ path('notification_renew', {id: item.id}) }}"
+                        data-renew-token="{{ csrf_token('renew_notification_' ~ item.id) }}"
+                        data-renew-title="{{ item.document.typeLabel }}"
+                        data-renew-owner="{{ item.document.ownerLabel }}"
+                        data-renew-current="{{ item.document.validUntil|date('d.m.Y') }}"
+                        data-renew-min="{{ item.document.validUntil|date_modify('+1 day')|date('Y-m-d') }}">
+                    <i class="ri-calendar-check-line text-base" aria-hidden="true"></i>
+                    Produži rok
+                </button>
+            {% endif %}
+            </article>
         {% else %}
             <div class="rounded border border-dashed border-black/10 bg-white p-8 text-center text-muted shadow-sm dark:border-darkborder dark:bg-darklight">Još nema obavijesti.</div>
         {% endfor %}

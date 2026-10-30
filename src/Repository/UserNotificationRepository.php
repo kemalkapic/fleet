@@ -20,6 +20,7 @@ class UserNotificationRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('item')
             ->leftJoin('item.deliveryLogs', 'deliveryLog')->addSelect('deliveryLog')
+            ->leftJoin('item.document', 'document')->addSelect('document')
             ->andWhere('item.user = :user')->setParameter('user', $user)
             ->orderBy('item.createdAt', 'DESC')->addOrderBy('item.id', 'DESC')
             ->setMaxResults($limit)->getQuery()->getResult();
