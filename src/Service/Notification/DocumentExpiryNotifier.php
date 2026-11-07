@@ -12,7 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class DocumentExpiryNotifier
 {
-    private const THRESHOLDS = [15, 7, 1, -1];
+    private const THRESHOLDS = [15, 7, 1, -1, -7];
 
     public function __construct(
         private FleetDocumentRepository $documents,
@@ -161,6 +161,16 @@ final readonly class DocumentExpiryNotifier
     {
         $ownerType = $document->getOwnerType() === FleetDocument::OWNER_DRIVER ? 'vozača' : 'vozilo';
 
+        if ($daysBefore === -7) {
+            return sprintf(
+                'Još uvijek niste produžili evidenciju "%s" za %s "%s" u aplikaciji Vozi Miško. Rok je istekao prije 7 dana, %s. Produžite evidenciju kako biste za sljedeći istek bili obaviješteni na vrijeme.',
+                $document->getTypeLabel(),
+                $ownerType,
+                $document->getOwnerLabel(),
+                $document->getValidUntil()->format('d.m.Y'),
+            );
+        }
+
         if ($daysBefore === -1) {
             return sprintf(
                 'Rok za evidenciju "%s" za %s "%s" istekao je jučer, %s.',
@@ -183,6 +193,14 @@ final readonly class DocumentExpiryNotifier
 
     private function buildTitle(FleetDocument $document, int $daysBefore): string
     {
+        if ($daysBefore === -7) {
+            return sprintf(
+                'Podsjetnik: Produžite %s za %s',
+                $document->getTypeLabel(),
+                $document->getOwnerLabel(),
+            );
+        }
+
         $prefix = match ($daysBefore) {
             -1 => 'Isteklo',
             1 => 'Hitno',
@@ -208,6 +226,10 @@ final readonly class DocumentExpiryNotifier
         }
 
         $item = $items[0];
+        if ($item['daysBefore'] === -7) {
+            return $this->buildTitle($item['document'], $item['daysBefore']);
+        }
+
         $prefix = match ($item['daysBefore']) {
             -1 => 'Isteklo',
             1 => 'Hitno',

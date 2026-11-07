@@ -16,8 +16,8 @@ self.addEventListener('push', (event) => {
 
     event.waitUntil(self.registration.showNotification(data.title || 'Vozi Miško', {
         body: data.body || '',
-        icon: data.icon || '/assets/images/app-icon-192.png',
-        badge: data.badge || '/assets/images/favicon-32.png',
+        icon: data.icon || '/assets/images/app-icon-192.png?v=2',
+        badge: data.badge || '/assets/images/notification-badge-96.png?v=1',
         tag: data.tag || undefined,
         renotify: true,
         requireInteraction: true,

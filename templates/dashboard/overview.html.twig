@@ -407,6 +407,26 @@
 
     <section class="mt-4 p-4 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10 sm:p-5">
         <div class="dashboard-section-header">
+            <span class="dashboard-section-icon dashboard-section-icon-chart" aria-hidden="true">
+                <i class="ri-bar-chart-line"></i>
+            </span>
+            <div class="min-w-0">
+                <h2 class="dashboard-section-title">Rokovi u narednih 6 mjeseci</h2>
+                <p class="dashboard-section-description">Broj evidencija koje ističu po mjesecima.</p>
+            </div>
+        </div>
+        <div
+            id="document-expiry-chart"
+            style="min-height: 280px;"
+            data-chart-labels="{{ expiry_chart_labels|json_encode|e('html_attr') }}"
+            data-chart-values="{{ expiry_chart_values|json_encode|e('html_attr') }}"
+            data-chart-details="{{ expiry_chart_details|json_encode|e('html_attr') }}"
+        ></div>
+        <div id="document-expiry-details" class="mt-3 hidden rounded border border-black/10 bg-black/[0.02] p-3 dark:border-darkborder dark:bg-white/[0.03]"></div>
+    </section>
+
+    <section class="mt-4 p-4 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10 sm:p-5">
+        <div class="dashboard-section-header">
             <span class="dashboard-section-icon dashboard-section-icon-notifications" aria-hidden="true">
                 <i class="ri-notification-line"></i>
             </span>
@@ -434,26 +454,6 @@
                 <p class="text-sm text-muted">Još nema poslanih obavijesti.</p>
             {% endfor %}
         </div>
-    </section>
-
-    <section class="mt-4 p-4 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10 sm:p-5">
-        <div class="dashboard-section-header">
-            <span class="dashboard-section-icon dashboard-section-icon-chart" aria-hidden="true">
-                <i class="ri-bar-chart-line"></i>
-            </span>
-            <div class="min-w-0">
-                <h2 class="dashboard-section-title">Rokovi u narednih 6 mjeseci</h2>
-                <p class="dashboard-section-description">Broj evidencija koje ističu po mjesecima.</p>
-            </div>
-        </div>
-        <div
-            id="document-expiry-chart"
-            style="min-height: 280px;"
-            data-chart-labels="{{ expiry_chart_labels|json_encode|e('html_attr') }}"
-            data-chart-values="{{ expiry_chart_values|json_encode|e('html_attr') }}"
-            data-chart-details="{{ expiry_chart_details|json_encode|e('html_attr') }}"
-        ></div>
-        <div id="document-expiry-details" class="mt-3 hidden rounded border border-black/10 bg-black/[0.02] p-3 dark:border-darkborder dark:bg-white/[0.03]"></div>
     </section>
 
     <div class="dashboard-modal-backdrop" data-expiry-modal>

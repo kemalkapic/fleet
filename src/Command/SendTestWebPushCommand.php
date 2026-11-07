@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-#[AsCommand(name: 'app:notifications:test', description: 'Sends five test push notifications and one summary email to a user.')]
+#[AsCommand(name: 'app:notifications:test', description: 'Sends one test push notification and one email to a user.')]
 final class SendTestWebPushCommand extends Command
 {
     public function __construct(

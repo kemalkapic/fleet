@@ -77,7 +77,7 @@
                             <td class="text-right">
                                 <div class="inline-flex items-center gap-2">
                                 {% if user.company and user.active %}
-                                    <form method="post" action="{{ path('platform_user_send_test_notifications', {id: user.id}) }}" onsubmit="return confirm('Poslati 5 testnih push obavijesti i jedan email korisniku {{ user.email|e('js') }}?');">
+                                    <form method="post" action="{{ path('platform_user_send_test_notifications', {id: user.id}) }}" onsubmit="return confirm('Poslati jednu testnu push obavijest i jedan email korisniku {{ user.email|e('js') }}?');">
                                         <input type="hidden" name="_token" value="{{ csrf_token('send_test_notifications_' ~ user.id) }}">
                                         <button type="submit" class="inline-flex items-center justify-center gap-2 px-3 py-2 rounded text-info bg-info/10" title="Pošalji testne obavijesti">
                                             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m4 4 17 8-17 8 3-8-3-8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>

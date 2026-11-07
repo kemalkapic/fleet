@@ -55,8 +55,8 @@ final readonly class WebPushSender
             'title' => $item->getTitle(),
             'body' => $item->getMessageText(),
             'url' => '/notifications/'.$item->getId().'/open',
-            'icon' => '/assets/images/app-icon-192.png',
-            'badge' => '/assets/images/favicon-32.png',
+            'icon' => '/assets/images/app-icon-192.png?v=2',
+            'badge' => '/assets/images/notification-badge-96.png?v=1',
             'tag' => $item->getEventKey(),
         ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
 

@@ -97,9 +97,8 @@ class UserController extends AbstractController
         try {
             $result = $sender->send($user);
             $this->addFlash('success', sprintf(
-                'Za %s kreirano je %d obavijesti, isporučeno %d push poruka i %s jedan testni email.',
+                'Za %s kreirana je jedna obavijest, isporučeno %d push poruka i %s jedan testni email.',
                 $user->getEmail(),
-                $result['notifications'],
                 $result['pushSent'],
                 $result['emailSent'] ? 'poslan je' : 'nije poslan',
             ));
