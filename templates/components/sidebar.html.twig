@@ -6,6 +6,7 @@
 {% set is_drivers = current_route starts with 'driver_' and not (current_route starts with 'driver_scan_') %}
 {% set is_documents = current_route starts with 'document_' %}
 {% set is_notifications = current_route starts with 'notification_' %}
+{% set is_profile = current_route == 'profile_edit' %}
 
 <nav class="sidebar fixed z-[9999] flex-none w-[240px] ltr:border-r rtl:border-l dark:bg-darkborder border-black/10 transition-all duration-300 overflow-hidden" style="height: 100vh; height: 100dvh;">
     <div class="sidebar-layout h-full bg-white dark:bg-darklight">
@@ -103,7 +104,16 @@
             </ul>
 
             {% if app.user %}
-                <div class="sidebar-terms-link border-t border-black/10 pt-5 dark:border-darkborder">
+                <div class="sidebar-terms-link flex flex-col gap-1 border-t border-black/10 pt-5 dark:border-darkborder">
+                    <a href="{{ path('profile_edit') }}" class="nav-link group {{ is_profile ? 'active' : '' }}">
+                        <div class="flex items-center">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
+                                <path d="M4.5 20a7.5 7.5 0 0 1 15 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                            </svg>
+                            <span class="ltr:pl-1.5 rtl:pr-1.5">Profil</span>
+                        </div>
+                    </a>
                     <button type="button" class="nav-link group flex w-full items-center text-left" @click="$dispatch('terms-open')">
                         <div class="flex items-center">
                             <i class="ri-information-line text-xl"></i>
