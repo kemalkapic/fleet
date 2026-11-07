@@ -67,6 +67,26 @@ class NotificationRepository extends ServiceEntityRepository
         ];
     }
 
+    /**
+     * @return list<Notification>
+     */
+    public function findPlatformSentBetween(\DateTimeImmutable $from, \DateTimeImmutable $toExclusive): array
+    {
+        return $this->createQueryBuilder('notification')
+            ->addSelect('company')
+            ->innerJoin('notification.company', 'company')
+            ->andWhere('notification.status = :status')
+            ->andWhere('notification.sentAt >= :from')
+            ->andWhere('notification.sentAt < :to')
+            ->setParameter('status', Notification::STATUS_SENT)
+            ->setParameter('from', $from->setTime(0, 0))
+            ->setParameter('to', $toExclusive->setTime(0, 0))
+            ->orderBy('notification.sentAt', 'ASC')
+            ->addOrderBy('notification.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function findLatestForCompany(Company $company): ?Notification
     {
         return $this->createQueryBuilder('notification')

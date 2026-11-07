@@ -67,6 +67,8 @@ class DashboardController extends AbstractController
             $activityValues = [];
             $activityDetails = [];
             $activityIndexes = [];
+            $notificationDetails = [];
+            $notificationSeriesByCompany = [];
             for ($dayOffset = 0; $dayOffset < 14; ++$dayOffset) {
                 $day = $activityStart->modify(sprintf('+%d days', $dayOffset));
                 $key = $day->format('Y-m-d');
@@ -74,6 +76,7 @@ class DashboardController extends AbstractController
                 $activityLabels[] = $day->format('d.m.');
                 $activityValues[] = 0;
                 $activityDetails[] = [];
+                $notificationDetails[] = [];
             }
 
             foreach ($userActivities->findPlatformBetween($activityStart, $today) as $activity) {
@@ -91,6 +94,35 @@ class DashboardController extends AbstractController
                     'time' => $activity->getLastSeenAt()->format('H:i'),
                 ];
             }
+
+            foreach ($notifications->findPlatformSentBetween($activityStart, $today->modify('+1 day')) as $notification) {
+                $sentAt = $notification->getSentAt();
+                $dayIndex = $sentAt !== null ? ($activityIndexes[$sentAt->format('Y-m-d')] ?? null) : null;
+                if ($dayIndex === null) {
+                    continue;
+                }
+
+                $company = $notification->getCompany();
+                if ($company === null) {
+                    continue;
+                }
+
+                $companyKey = (string) ($company->getId() ?? spl_object_id($company));
+                $notificationSeriesByCompany[$companyKey] ??= [
+                    'name' => $company->getName(),
+                    'data' => array_fill(0, 14, 0),
+                ];
+                ++$notificationSeriesByCompany[$companyKey]['data'][$dayIndex];
+                $notificationDetails[$dayIndex][] = [
+                    'company' => $company->getName(),
+                    'channel' => $notification->getChannel() === 'web_push' ? 'Web push' : 'Email',
+                    'recipient' => $notification->getRecipient() ?? '-',
+                    'time' => $sentAt->format('H:i'),
+                ];
+            }
+
+            $notificationSeries = array_values($notificationSeriesByCompany);
+            usort($notificationSeries, static fn (array $left, array $right): int => strcasecmp($left['name'], $right['name']));
 
             foreach ($documents->findPlatformExpiringBetween($today, $chartEnd) as $document) {
                 $monthIndex = $expiryChartIndexes[$document->getValidUntil()->format('Y-m')] ?? null;
@@ -125,6 +157,9 @@ class DashboardController extends AbstractController
                 'activity_chart_labels' => $activityLabels,
                 'activity_chart_values' => $activityValues,
                 'activity_chart_details' => $activityDetails,
+                'notification_chart_labels' => $activityLabels,
+                'notification_chart_series' => $notificationSeries,
+                'notification_chart_details' => $notificationDetails,
             ]);
         }
 
