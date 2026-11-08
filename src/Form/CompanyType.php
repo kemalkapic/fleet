@@ -5,10 +5,13 @@ namespace App\Form;
 use App\Entity\Company;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Image;
 
 class CompanyType extends AbstractType
 {
@@ -17,6 +20,18 @@ class CompanyType extends AbstractType
         $builder
             ->add('name', TextType::class, [
                 'label' => 'Naziv firme',
+            ])
+            ->add('logo', FileType::class, [
+                'label' => 'Logo firme',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new Image([
+                        'maxSize' => '2M',
+                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/webp'],
+                        'mimeTypesMessage' => 'Odaberite PNG, JPG ili WebP sliku.',
+                    ]),
+                ],
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'Status',
@@ -51,6 +66,14 @@ class CompanyType extends AbstractType
                     'min' => 0,
                 ],
             ]);
+
+        if ($options['data'] instanceof Company && $options['data']->getLogoPath() !== null) {
+            $builder->add('removeLogo', CheckboxType::class, [
+                'label' => 'Ukloni trenutni logo',
+                'mapped' => false,
+                'required' => false,
+            ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void

@@ -5,8 +5,11 @@ namespace App\Controller\Platform;
 use App\Entity\Company;
 use App\Form\CompanyType;
 use App\Repository\CompanyRepository;
+use App\Service\Storage\CompanyLogoStorage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -25,13 +28,18 @@ class CompanyController extends AbstractController
     }
 
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(
+        Request $request,
+        CompanyLogoStorage $logoStorage,
+        EntityManagerInterface $entityManager,
+    ): Response
     {
         $company = new Company();
         $form = $this->createForm(CompanyType::class, $company);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $this->applyLogo($company, $form, $logoStorage);
             $entityManager->persist($company);
             $entityManager->flush();
 
@@ -47,12 +55,18 @@ class CompanyController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-    public function edit(Company $company, Request $request, EntityManagerInterface $entityManager): Response
+    public function edit(
+        Company $company,
+        Request $request,
+        CompanyLogoStorage $logoStorage,
+        EntityManagerInterface $entityManager,
+    ): Response
     {
         $form = $this->createForm(CompanyType::class, $company);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $this->applyLogo($company, $form, $logoStorage);
             $entityManager->flush();
 
             $this->addFlash('success', 'Firma je ažurirana.');
@@ -64,5 +78,23 @@ class CompanyController extends AbstractController
             'company' => $company,
             'form' => $form,
         ]);
+    }
+
+    private function applyLogo(Company $company, FormInterface $form, CompanyLogoStorage $storage): void
+    {
+        $uploadedLogo = $form->get('logo')->getData();
+
+        if ($uploadedLogo instanceof UploadedFile) {
+            $oldLogoPath = $company->getLogoPath();
+            $company->setLogoPath($storage->store($uploadedLogo));
+            $storage->remove($oldLogoPath);
+
+            return;
+        }
+
+        if ($form->has('removeLogo') && $form->get('removeLogo')->getData() === true) {
+            $storage->remove($company->getLogoPath());
+            $company->setLogoPath(null);
+        }
     }
 }

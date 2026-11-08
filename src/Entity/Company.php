@@ -21,6 +21,9 @@ class Company
     #[ORM\Column(length: 30)]
     private string $status = 'active';
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $logoPath = null;
+
     #[ORM\Column(nullable: true)]
     private ?int $vehicleLimit = 5;
 
@@ -83,6 +86,20 @@ class Company
     public function setStatus(string $status): self
     {
         $this->status = $status;
+        $this->touch();
+
+        return $this;
+    }
+
+    public function getLogoPath(): ?string
+    {
+        return $this->logoPath;
+    }
+
+    public function setLogoPath(?string $logoPath): self
+    {
+        $logoPath = $logoPath !== null ? trim($logoPath) : null;
+        $this->logoPath = $logoPath !== '' ? $logoPath : null;
         $this->touch();
 
         return $this;

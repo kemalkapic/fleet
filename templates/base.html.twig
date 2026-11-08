@@ -120,25 +120,31 @@
                 <div class="flex min-h-screen flex-1 flex-col min-w-0 main-content">
                     <header class="app-header sticky top-0 bg-white border-b dark:bg-darklight dark:border-darkborder border-black/10">
                         <div class="flex items-center justify-between h-16 px-4 sm:px-6">
-                            <div class="flex items-center gap-3">
+                            <div class="flex min-w-0 flex-1 items-center gap-3">
                                 <button type="button" class="flex items-center justify-center rounded size-10 text-black/70 bg-black/5 dark:text-white dark:bg-white/10 lg:hidden" @click="$store.app.toggleSidebar()" aria-label="Otvori meni">
                                     <span class="text-2xl font-semibold leading-none" aria-hidden="true">&#9776;</span>
                                 </button>
                                 {% if app.user %}
                                     <div class="min-w-0">
-                                        <div class="inline-flex max-w-[210px] items-center rounded-lg border border-purple/20 bg-white px-4 py-2 text-purple shadow-sm shadow-purple/10 sm:max-w-[360px]">
-                                            <span class="block truncate text-sm font-bold leading-5 text-purple sm:text-base">
-                                                {% if app.user.company %}
-                                                    {{ app.user.company.name }}
-                                                {% else %}
-                                                    Platforma
-                                                {% endif %}
-                                            </span>
-                                        </div>
+                                        {% if app.user.company and app.user.company.logoPath %}
+                                            <div class="flex h-10 w-[140px] max-w-full items-center justify-start overflow-hidden sm:w-[220px]">
+                                                <img src="{{ asset(app.user.company.logoPath) }}" alt="{{ app.user.company.name }}" class="block h-10 max-w-full object-contain object-left">
+                                            </div>
+                                        {% else %}
+                                            <div class="inline-flex max-w-[210px] items-center rounded-lg border border-purple/20 bg-white px-4 py-2 text-purple shadow-sm shadow-purple/10 sm:max-w-[360px]">
+                                                <span class="block truncate text-sm font-bold leading-5 text-purple sm:text-base">
+                                                    {% if app.user.company %}
+                                                        {{ app.user.company.name }}
+                                                    {% else %}
+                                                        Platforma
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        {% endif %}
                                     </div>
                                 {% endif %}
                             </div>
-                            <div class="flex items-center gap-2 sm:gap-3">
+                            <div class="flex shrink-0 items-center gap-2 sm:gap-3">
                                 {% if app.user %}
                                     {% set notification_box = notification_inbox() %}
                                     <div class="relative"

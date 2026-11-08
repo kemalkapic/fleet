@@ -163,32 +163,11 @@ class DashboardController extends AbstractController
             ]);
         }
 
-        $stats = [
-            'companies' => $companies->count([]),
-            'vehicles' => 0,
-            'vehicleLimit' => null,
-            'drivers' => 0,
-            'driverLimit' => null,
-            'documents' => 0,
-            'documentLimit' => null,
-            'sentNotifications' => 0,
-            'expiringSoon' => 0,
-            'expiredDocuments' => 0,
-        ];
         $upcomingDocuments = [];
         $expiredDocuments = [];
         $latestNotifications = [];
 
         if ($company !== null) {
-            $stats['vehicles'] = $vehicles->countForCompany($company);
-            $stats['vehicleLimit'] = $company->getVehicleLimit();
-            $stats['drivers'] = $drivers->countForCompany($company);
-            $stats['driverLimit'] = $company->getDriverLimit();
-            $stats['documents'] = $documents->countForCompany($company);
-            $stats['documentLimit'] = $company->getDocumentLimit();
-            $stats['sentNotifications'] = $notifications->countSentForCompany($company);
-            $stats['expiringSoon'] = $documents->countExpiringWithinForCompany($company, $today, $next30Days);
-            $stats['expiredDocuments'] = $documents->countExpiredForCompany($company, $today);
             $upcomingDocuments = $documents->findUpcomingForCompany($company, $today, 10);
             $expiredDocuments = $documents->findExpiredForCompany($company, $today, 10);
             $latestNotifications = $notifications->findLatestForCompanyLimited($company, 3);
@@ -208,7 +187,6 @@ class DashboardController extends AbstractController
         }
 
         return $this->render('dashboard/overview.html.twig', [
-            'stats' => $stats,
             'today' => $today,
             'upcoming_documents' => $upcomingDocuments,
             'expired_documents' => $expiredDocuments,
