@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="bs">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Registracija | {{ app_name }}</title>
+        {% include 'components/app_head.html.twig' %}
+        <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/remixicon.css') }}">
+    </head>
+    <body class="bg-[#f9fbfd] text-sm antialiased font-normal text-black font-cerebri">
+        <main class="grid min-h-screen lg:grid-cols-[minmax(480px,0.95fr)_1.05fr]">
+            <section class="flex items-center justify-center bg-white p-4 py-10 sm:p-8">
+                <div class="w-full max-w-lg">
+                    <div class="mb-7 text-center lg:text-left">
+                        <a href="{{ path('app_login') }}" class="inline-block">
+                            <img src="{{ asset('assets/images/logo-light.png') }}" class="mx-auto mb-3 h-16 lg:mx-0" alt="{{ app_name }}">
+                        </a>
+                        <h1 class="text-3xl font-semibold">Otvorite korisnički račun</h1>
+                        <p class="mt-2 text-muted">Dodajte svoja vozila i vodite urednu servisnu knjigu.</p>
+                    </div>
+
+                    {{ form_start(registration_form, {attr: {class: 'space-y-4'}}) }}
+                        {{ form_errors(registration_form) }}
+
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                {{ form_label(registration_form.firstName, null, {label_attr: {class: 'mb-2 block text-sm font-medium'}}) }}
+                                {{ form_widget(registration_form.firstName, {attr: {class: 'w-full rounded border border-black/10 bg-transparent px-4 py-2.5 outline-none focus:border-purple'}}) }}
+                                <div class="mt-1 text-xs text-danger">{{ form_errors(registration_form.firstName) }}</div>
+                            </div>
+                            <div>
+                                {{ form_label(registration_form.lastName, null, {label_attr: {class: 'mb-2 block text-sm font-medium'}}) }}
+                                {{ form_widget(registration_form.lastName, {attr: {class: 'w-full rounded border border-black/10 bg-transparent px-4 py-2.5 outline-none focus:border-purple'}}) }}
+                                <div class="mt-1 text-xs text-danger">{{ form_errors(registration_form.lastName) }}</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            {{ form_label(registration_form.email, null, {label_attr: {class: 'mb-2 block text-sm font-medium'}}) }}
+                            {{ form_widget(registration_form.email, {attr: {class: 'w-full rounded border border-black/10 bg-transparent px-4 py-2.5 outline-none focus:border-purple', autocomplete: 'email'}}) }}
+                            <div class="mt-1 text-xs text-danger">{{ form_errors(registration_form.email) }}</div>
+                        </div>
+
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                {{ form_label(registration_form.plainPassword.first, null, {label_attr: {class: 'mb-2 block text-sm font-medium'}}) }}
+                                {{ form_widget(registration_form.plainPassword.first, {attr: {class: 'w-full rounded border border-black/10 bg-transparent px-4 py-2.5 outline-none focus:border-purple', autocomplete: 'new-password'}}) }}
+                                <div class="mt-1 text-xs text-danger">{{ form_errors(registration_form.plainPassword.first) }}</div>
+                            </div>
+                            <div>
+                                {{ form_label(registration_form.plainPassword.second, null, {label_attr: {class: 'mb-2 block text-sm font-medium'}}) }}
+                                {{ form_widget(registration_form.plainPassword.second, {attr: {class: 'w-full rounded border border-black/10 bg-transparent px-4 py-2.5 outline-none focus:border-purple', autocomplete: 'new-password'}}) }}
+                                <div class="mt-1 text-xs text-danger">{{ form_errors(registration_form.plainPassword.second) }}</div>
+                            </div>
+                        </div>
+
+                        <p class="rounded bg-info/10 px-3 py-2 text-xs leading-5 text-info">
+                            Nakon registracije poslat ćemo vam email za aktivaciju računa. Link vrijedi 24 sata.
+                        </p>
+
+                        <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded bg-purple px-4 py-2.5 font-semibold text-white">
+                            <i class="ri-user-add-line text-lg" aria-hidden="true"></i>
+                            Registriraj se
+                        </button>
+                    {{ form_end(registration_form) }}
+
+                    <p class="mt-5 text-center text-sm text-muted lg:text-left">
+                        Već imate korisnički račun?
+                        <a href="{{ path('app_login') }}" class="font-semibold text-purple hover:underline">Prijavite se</a>
+                    </p>
+                </div>
+            </section>
+
+            <section class="hidden items-center justify-center bg-[#f4f5ff] p-10 lg:flex">
+                <div class="max-w-lg text-center">
+                    <i class="ri-tools-line text-6xl text-purple" aria-hidden="true"></i>
+                    <h2 class="mt-5 text-4xl font-semibold">Servisna historija na jednom mjestu</h2>
+                    <p class="mt-4 text-base leading-7 text-muted">Pratite mali, veliki, izvanredni i ostale servise, kilometražu, ugrađene dijelove i račune za svako vozilo.</p>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>

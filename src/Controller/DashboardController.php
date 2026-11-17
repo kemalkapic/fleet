@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Repository\CompanyRepository;
 use App\Repository\DriverRepository;
 use App\Repository\FleetDocumentRepository;
@@ -26,8 +27,18 @@ class DashboardController extends AbstractController
         NotificationRepository $notifications,
         UserRepository $users,
         UserActivityRepository $userActivities,
+        string $termsVersion,
     ): Response
     {
+        $currentUser = $this->getUser();
+        if ($currentUser instanceof User
+            && $this->isGranted('ROLE_END_USER')
+            && !$this->isGranted('ROLE_COMPANY_ADMIN')
+            && $currentUser->hasAcceptedTerms($termsVersion)
+        ) {
+            return $this->redirectToRoute('vehicle_index');
+        }
+
         $company = $tenantContext->getCompany();
         $today = new \DateTimeImmutable('today');
         $next30Days = $today->modify('+30 days');

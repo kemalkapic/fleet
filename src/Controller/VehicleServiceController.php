@@ -26,7 +26,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/vehicles', name: 'vehicle_service_')]
-#[IsGranted('ROLE_COMPANY_ADMIN')]
+#[IsGranted('ROLE_END_USER')]
 class VehicleServiceController extends AbstractController
 {
     private const MAX_RECEIPTS = 5;

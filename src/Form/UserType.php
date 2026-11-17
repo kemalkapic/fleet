@@ -42,6 +42,7 @@ class UserType extends AbstractType
                 'choices' => [
                     'Super admin' => 'ROLE_SUPER_ADMIN',
                     'Administrator firme' => 'ROLE_COMPANY_ADMIN',
+                    'Krajnji korisnik' => 'ROLE_END_USER',
                     'Vozač' => 'ROLE_DRIVER',
                 ],
                 'multiple' => true,

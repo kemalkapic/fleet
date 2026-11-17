@@ -44,6 +44,7 @@ final class ProfileController extends AbstractController
         return match (true) {
             in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true) => 'Super administrator',
             in_array('ROLE_COMPANY_ADMIN', $user->getRoles(), true) => 'Administrator firme',
+            in_array('ROLE_END_USER', $user->getRoles(), true) => 'Krajnji korisnik',
             in_array('ROLE_DRIVER', $user->getRoles(), true) => 'Vozač',
             default => 'Korisnik',
         };

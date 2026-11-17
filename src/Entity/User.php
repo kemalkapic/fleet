@@ -11,6 +11,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'app_user')]
 #[ORM\UniqueConstraint(name: 'UNIQ_APP_USER_EMAIL', fields: ['email'])]
+#[ORM\Index(name: 'IDX_USER_ACTIVATION_TOKEN', columns: ['activation_token_hash'])]
 #[UniqueEntity(fields: ['email'], message: 'Korisnik s ovom email adresom već postoji.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -58,6 +59,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 30, nullable: true)]
     private ?string $termsAcceptedVersion = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $emailVerifiedAt = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $activationTokenHash = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $activationExpiresAt = null;
 
     public function __construct()
     {
@@ -238,6 +248,53 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->termsAcceptedAt = new \DateTimeImmutable();
         $this->termsAcceptedVersion = $version;
+        $this->touch();
+
+        return $this;
+    }
+
+    public function getEmailVerifiedAt(): ?\DateTimeImmutable
+    {
+        return $this->emailVerifiedAt;
+    }
+
+    public function getActivationTokenHash(): ?string
+    {
+        return $this->activationTokenHash;
+    }
+
+    public function getActivationExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->activationExpiresAt;
+    }
+
+    public function prepareActivation(string $plainToken, \DateTimeImmutable $expiresAt): self
+    {
+        $this->activationTokenHash = hash('sha256', $plainToken);
+        $this->activationExpiresAt = $expiresAt;
+        $this->emailVerifiedAt = null;
+        $this->isActive = false;
+        $this->touch();
+
+        return $this;
+    }
+
+    public function canActivateWith(string $plainToken, ?\DateTimeImmutable $now = null): bool
+    {
+        $now ??= new \DateTimeImmutable();
+
+        return $this->activationTokenHash !== null
+            && $this->activationExpiresAt !== null
+            && $this->activationExpiresAt >= $now
+            && hash_equals($this->activationTokenHash, hash('sha256', $plainToken));
+    }
+
+    public function activate(): self
+    {
+        $this->emailVerifiedAt = new \DateTimeImmutable();
+        $this->activationTokenHash = null;
+        $this->activationExpiresAt = null;
+        $this->isActive = true;
         $this->touch();
 
         return $this;

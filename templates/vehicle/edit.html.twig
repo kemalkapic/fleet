@@ -60,6 +60,7 @@
                     </svg>
                     Osnovni podaci
                 </button>
+                {% if is_granted('ROLE_COMPANY_ADMIN') %}
                 <button type="button" class="vehicle-edit-tab" data-tab-target="vehicle-documents" role="tab">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <path d="M7 3h7l4 4v14H7V3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
@@ -81,6 +82,7 @@
                     </svg>
                     Gorivo
                 </button>
+                {% endif %}
                 <button type="button" class="vehicle-edit-tab" data-tab-target="vehicle-services" role="tab">
                     <i class="ri-tools-line text-xl" aria-hidden="true"></i>
                     Servisna knjiga
@@ -96,6 +98,7 @@
                 } %}
             </div>
 
+            {% if is_granted('ROLE_COMPANY_ADMIN') %}
             <div id="vehicle-documents" class="vehicle-edit-panel">
                 <div class="mb-3">
                     <a href="{{ path('document_new', {vehicle: vehicle.id}) }}" class="inline-flex w-full items-center justify-center gap-2 rounded bg-purple px-4 py-2 text-sm font-semibold text-white">
@@ -351,6 +354,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
 
             <div id="vehicle-services" class="vehicle-edit-panel">
                 <div class="mb-4">

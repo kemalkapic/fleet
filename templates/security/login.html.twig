@@ -232,9 +232,17 @@
                     </div>
 
                     <div class="p-6 bg-white border rounded dark:bg-dark dark:border-darkborder border-black/10 lg:border-0 lg:p-0 lg:shadow-none">
+                    {% for message in app.flashes('success') %}
+                        <div class="p-3 mb-4 text-sm rounded text-success bg-success/10">{{ message }}</div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('error') %}
+                        <div class="p-3 mb-4 text-sm rounded text-danger bg-danger/10">{{ message }}</div>
+                    {% endfor %}
+
                     {% if error %}
                         <div class="p-3 mb-4 text-sm rounded text-danger bg-danger/10">
-                            Pogrešna email adresa ili šifra.
+                            {{ error.messageKey|trans(error.messageData, 'security') }}
                         </div>
                     {% endif %}
 
@@ -271,6 +279,10 @@
                             Prijavi se
                         </button>
                     </form>
+                    <p class="mt-5 text-center text-sm text-muted lg:text-left">
+                        Nemate korisnički račun?
+                        <a href="{{ path('app_register') }}" class="font-semibold text-purple hover:underline">Registrirajte se</a>
+                    </p>
                     </div>
                 </div>
             </section>

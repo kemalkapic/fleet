@@ -146,8 +146,9 @@
                             </div>
                             <div class="flex shrink-0 items-center gap-2 sm:gap-3">
                                 {% if app.user %}
-                                    {% set notification_box = notification_inbox() %}
-                                    <div class="relative"
+                                    {% if is_granted('ROLE_COMPANY_ADMIN') %}
+                                        {% set notification_box = notification_inbox() %}
+                                        <div class="relative"
                                          x-data="{ notificationOpen: {{ app.request.query.get('notifications') == 'open' ? 'true' : 'false' }} }"
                                          x-init="if (notificationOpen) { const url = new URL(window.location.href); url.searchParams.delete('notifications'); window.history.replaceState({}, '', url.pathname + url.search + url.hash); }"
                                          @click.outside="notificationOpen = false" id="notification-center"
@@ -186,7 +187,8 @@
                                             <p id="push-message" class="hidden px-3 pb-3 text-center text-[11px] text-muted"></p>
                                         </section>
                                         </template>
-                                    </div>
+                                        </div>
+                                    {% endif %}
                                     <span class="header-user-name max-w-[240px] truncate text-sm font-medium text-black dark:text-white">{{ app.user.fullName ?: app.user.userIdentifier }}</span>
                                     <a href="{{ path('app_logout') }}" class="inline-flex items-center justify-center rounded size-10 text-danger bg-danger/10 hover:bg-danger hover:text-white" title="Odjava" aria-label="Odjava">
                                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -220,7 +222,9 @@
             {% include 'components/terms_modal.html.twig' with {
                 terms_required: not app.user.hasAcceptedTerms(terms_version)
             } only %}
-            {% include 'notification/_renew_modal.html.twig' %}
+            {% if is_granted('ROLE_COMPANY_ADMIN') %}
+                {% include 'notification/_renew_modal.html.twig' %}
+            {% endif %}
         {% endif %}
 
         <script src="{{ asset('assets/js/alpine-collaspe.min.js') }}"></script>

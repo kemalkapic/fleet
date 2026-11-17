@@ -27,7 +27,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/vehicles', name: 'vehicle_')]
-#[IsGranted('ROLE_COMPANY_ADMIN')]
+#[IsGranted('ROLE_END_USER')]
 class VehicleController extends AbstractController
 {
     #[Route('', name: 'index', methods: ['GET'])]
@@ -177,6 +177,7 @@ class VehicleController extends AbstractController
         VehicleTireRepository $tires,
         EntityManagerInterface $entityManager,
     ): Response {
+        $this->denyAccessUnlessGranted('ROLE_COMPANY_ADMIN');
         $company = $tenantContext->requireCompany();
         $this->denyAccessUnlessGrantedForModule($moduleChecker, $company);
 
@@ -244,6 +245,7 @@ class VehicleController extends AbstractController
         VehicleRepository $vehicles,
         EntityManagerInterface $entityManager,
     ): Response {
+        $this->denyAccessUnlessGranted('ROLE_COMPANY_ADMIN');
         $company = $tenantContext->requireCompany();
         $this->denyAccessUnlessGrantedForModule($moduleChecker, $company);
 
@@ -296,6 +298,7 @@ class VehicleController extends AbstractController
         VehicleFuelEntryRepository $fuelEntries,
         EntityManagerInterface $entityManager,
     ): Response {
+        $this->denyAccessUnlessGranted('ROLE_COMPANY_ADMIN');
         $company = $tenantContext->requireCompany();
         $this->denyAccessUnlessGrantedForModule($moduleChecker, $company);
 
