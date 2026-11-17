@@ -16,6 +16,13 @@
         .vehicle-fuel-modal-backdrop { position: fixed; inset: 0; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.55); }
         .vehicle-fuel-modal-backdrop.is-open { display: flex; }
         .vehicle-fuel-modal { width: min(100%, 520px); border-radius: 8px; background: #fff; border: 1px solid rgba(0, 0, 0, 0.1); padding: 1rem; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22); }
+        .vehicle-service-modal-backdrop { position: fixed; inset: 0; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.58); }
+        .vehicle-service-modal-backdrop.is-open { display: flex; }
+        .vehicle-service-modal { width: min(100%, 760px); max-height: 92vh; overflow-y: auto; border-radius: 8px; background: #fff; border: 1px solid rgba(0, 0, 0, 0.1); padding: 1rem; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24); }
+        .vehicle-service-timeline { position: relative; margin-left: 0.55rem; padding-left: 1.5rem; }
+        .vehicle-service-timeline::before { content: ''; position: absolute; left: 0; top: 0.5rem; bottom: 0.5rem; width: 2px; background: rgb(109 91 255 / 0.18); }
+        .vehicle-service-entry { position: relative; }
+        .vehicle-service-entry::before { content: ''; position: absolute; left: -1.86rem; top: 1.15rem; width: 0.75rem; height: 0.75rem; border: 3px solid #fff; border-radius: 999px; background: rgb(109 91 255); box-shadow: 0 0 0 2px rgb(109 91 255 / 0.2); }
         @media (min-width: 768px) { .vehicle-edit-tabs { display: flex; overflow-x: auto; padding-bottom: 0.25rem; } .vehicle-edit-tab { justify-content: flex-start; white-space: nowrap; padding: 0.55rem 0.8rem; font-size: 0.875rem; } .vehicle-edit-tab svg { width: 1.25rem; height: 1.25rem; } }
         @media (min-width: 768px) { .vehicle-tire-grid { grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr) minmax(0, 0.9fr) minmax(0, 0.7fr) auto; align-items: end; } }
         @media (max-width: 900px) { .vehicle-fuel-row { grid-template-columns: 1fr; align-items: start; } }
@@ -33,7 +40,7 @@
             <div class="mb-4">
                 <div>
                     <h2 class="text-lg font-semibold text-black dark:text-white">{{ vehicle.registrationNumber }}</h2>
-                    <p class="mt-1 text-sm text-muted">Uredite podatke, dokumente i gume za ovo vozilo.</p>
+                    <p class="mt-1 text-sm text-muted">Uredite podatke i pratite kompletnu historiju vozila.</p>
                 </div>
             </div>
 
@@ -73,6 +80,10 @@
                         <path d="M9 7h3M15 8h2l2 2v7a2 2 0 0 0 4 0v-5l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     Gorivo
+                </button>
+                <button type="button" class="vehicle-edit-tab" data-tab-target="vehicle-services" role="tab">
+                    <i class="ri-tools-line text-xl" aria-hidden="true"></i>
+                    Servisna knjiga
                 </button>
             </div>
 
@@ -340,6 +351,179 @@
                     </div>
                 </div>
             </div>
+
+            <div id="vehicle-services" class="vehicle-edit-panel">
+                <div class="mb-4">
+                    <button type="button" class="inline-flex w-full items-center justify-center gap-2 rounded bg-purple px-4 py-2 text-sm font-semibold text-white" data-service-open>
+                        <i class="ri-add-line text-xl" aria-hidden="true"></i>
+                        Dodaj servis
+                    </button>
+                </div>
+
+                <div class="vehicle-service-timeline space-y-4">
+                    {% for record in service_records %}
+                        {% set service_label = service_types[record.type]|default('Ostali servis') %}
+                        {% set badge_class = record.type == 'small'
+                            ? 'bg-success/10 text-success'
+                            : (record.type == 'large'
+                                ? 'bg-purple/10 text-purple'
+                                : (record.type == 'emergency' ? 'bg-danger/10 text-danger' : 'bg-info/10 text-info')) %}
+                        <article class="vehicle-service-entry rounded border border-black/10 bg-white p-3 dark:border-darkborder dark:bg-darklight sm:p-4">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div class="min-w-0">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span class="rounded px-2 py-1 text-xs font-semibold {{ badge_class }}">{{ service_label }}</span>
+                                        <span class="text-sm font-semibold text-black dark:text-white">{{ record.serviceDate|date('d.m.Y') }}</span>
+                                    </div>
+                                    <p class="mt-2 text-sm text-muted">
+                                        <i class="ri-dashboard-3-line mr-1" aria-hidden="true"></i>
+                                        {{ record.odometerKm|number_format(0, ',', '.') }} km
+                                        {% if record.serviceProvider %}
+                                            <span class="mx-1">&middot;</span>
+                                            <i class="ri-map-pin-line mr-1" aria-hidden="true"></i>{{ record.serviceProvider }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    {% if record.costBam is not null %}
+                                        <span class="rounded bg-black/[0.04] px-2 py-1 text-sm font-semibold text-black dark:bg-white/5 dark:text-white">{{ record.costBam|number_format(2, ',', '.') }} KM</span>
+                                    {% endif %}
+                                    <form method="post" action="{{ path('vehicle_service_delete', {vehicleId: vehicle.id, serviceId: record.id}) }}" onsubmit="return confirm('Jeste li sigurni da želite obrisati ovaj servis i sve njegove račune?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_vehicle_service_' ~ record.id) }}">
+                                        <button type="submit" class="inline-flex size-9 items-center justify-center rounded bg-danger/10 text-danger" title="Obriši servis" aria-label="Obriši servis">
+                                            <i class="ri-delete-bin-line text-lg" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            {% if record.items|length %}
+                                <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                    {% for item in record.items %}
+                                        <div class="flex items-start gap-2 text-sm text-black dark:text-white">
+                                            <i class="ri-checkbox-circle-fill mt-0.5 text-success" aria-hidden="true"></i>
+                                            <span>{{ service_item_catalog[record.type][item]|default(item) }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            {% if record.additionalWork or record.notes %}
+                                <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                                    {% if record.additionalWork %}
+                                        <div class="rounded bg-black/[0.025] p-3 dark:bg-white/[0.03]">
+                                            <p class="text-[11px] font-semibold uppercase text-muted">Dodatni radovi</p>
+                                            <p class="mt-1 whitespace-pre-line text-sm text-black dark:text-white">{{ record.additionalWork }}</p>
+                                        </div>
+                                    {% endif %}
+                                    {% if record.notes %}
+                                        <div class="rounded bg-black/[0.025] p-3 dark:bg-white/[0.03]">
+                                            <p class="text-[11px] font-semibold uppercase text-muted">Napomena</p>
+                                            <p class="mt-1 whitespace-pre-line text-sm text-black dark:text-white">{{ record.notes }}</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                            {% if record.attachments|length %}
+                                <div class="mt-3 flex flex-wrap gap-2 border-t border-black/5 pt-3 dark:border-white/5">
+                                    {% for attachment in record.attachments %}
+                                        <a href="{{ path('vehicle_service_receipt_download', {id: attachment.id}) }}" class="inline-flex max-w-full items-center gap-2 rounded bg-info/10 px-3 py-2 text-xs font-semibold text-info">
+                                            <i class="{{ attachment.mimeType == 'application/pdf' ? 'ri-file-pdf-2-line' : 'ri-image-line' }} text-base" aria-hidden="true"></i>
+                                            <span class="truncate">{{ attachment.originalFilename }}</span>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </article>
+                    {% else %}
+                        <div class="rounded border border-dashed border-black/10 p-6 text-center dark:border-darkborder">
+                            <i class="ri-tools-line text-3xl text-muted" aria-hidden="true"></i>
+                            <p class="mt-2 text-sm font-semibold text-black dark:text-white">Servisna knjiga je prazna</p>
+                            <p class="mt-1 text-sm text-muted">Dodajte prvi servis i započnite historiju održavanja vozila.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="vehicle-service-modal-backdrop" data-service-modal>
+                    <div class="vehicle-service-modal" role="dialog" aria-modal="true" aria-labelledby="vehicle-service-modal-title">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h3 id="vehicle-service-modal-title" class="text-base font-semibold text-black">Novi servis</h3>
+                                <p class="mt-1 text-sm text-muted">Unesite podatke i označite izvršene radove.</p>
+                            </div>
+                            <button type="button" class="inline-flex size-9 items-center justify-center rounded text-muted hover:bg-black/5" data-service-close aria-label="Zatvori">
+                                <i class="ri-close-line text-xl" aria-hidden="true"></i>
+                            </button>
+                        </div>
+
+                        <form method="post" action="{{ path('vehicle_service_add', {vehicleId: vehicle.id}) }}" enctype="multipart/form-data" class="mt-4 space-y-4" data-service-form>
+                            <input type="hidden" name="_token" value="{{ csrf_token('add_vehicle_service_' ~ vehicle.id) }}">
+
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label for="service-type" class="block mb-1 text-xs font-medium text-black">Vrsta servisa</label>
+                                    <select id="service-type" name="type" required class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10" data-service-type>
+                                        {% for value, label in service_types %}
+                                            <option value="{{ value }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="service-date" class="block mb-1 text-xs font-medium text-black">Datum servisa</label>
+                                    <input id="service-date" type="date" name="serviceDate" value="{{ 'now'|date('Y-m-d') }}" required class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10">
+                                </div>
+                                <div>
+                                    <label for="service-odometer" class="block mb-1 text-xs font-medium text-black">Kilometraža</label>
+                                    <input id="service-odometer" type="number" min="1" step="1" name="odometerKm" value="{{ vehicle.currentMileage }}" required class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10">
+                                </div>
+                                <div>
+                                    <label for="service-cost" class="block mb-1 text-xs font-medium text-black">Ukupan trošak (KM)</label>
+                                    <input id="service-cost" type="number" min="0" step="0.01" name="costBam" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10">
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label for="service-provider" class="block mb-1 text-xs font-medium text-black">Servis ili izvođač</label>
+                                    <input id="service-provider" type="text" maxlength="180" name="serviceProvider" placeholder="Naziv servisa ili mehaničara" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10">
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="mb-2 text-xs font-semibold uppercase text-muted">Izvršeni radovi</p>
+                                <div class="grid gap-2 sm:grid-cols-2" data-service-items></div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label for="service-additional-work" class="block mb-1 text-xs font-medium text-black">Dodatni radovi</label>
+                                    <textarea id="service-additional-work" name="additionalWork" rows="3" placeholder="Svaki dodatni rad možete upisati ovdje" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10"></textarea>
+                                </div>
+                                <div>
+                                    <label for="service-notes" class="block mb-1 text-xs font-medium text-black">Napomena</label>
+                                    <textarea id="service-notes" name="notes" rows="3" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10"></textarea>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="service-receipts" class="block mb-1 text-xs font-medium text-black">Slike računa</label>
+                                <label for="service-receipts" class="flex cursor-pointer items-center justify-center gap-2 rounded border border-dashed border-black/15 bg-black/[0.02] px-4 py-3 text-sm font-semibold text-purple">
+                                    <i class="ri-attachment-2 text-xl" aria-hidden="true"></i>
+                                    <span data-service-file-label>Dodaj račune</span>
+                                </label>
+                                <input id="service-receipts" type="file" name="receipts[]" accept="image/jpeg,image/png,image/webp,application/pdf" multiple class="sr-only" data-service-files>
+                                <p class="mt-1 text-xs text-muted">Do 5 JPG, PNG, WebP ili PDF datoteka, najviše 5 MB po datoteci.</p>
+                            </div>
+
+                            <div class="flex justify-end gap-2 border-t border-black/5 pt-3">
+                                <button type="button" class="inline-flex items-center justify-center rounded bg-black/5 px-4 py-2 text-sm font-semibold text-black" data-service-close>Odustani</button>
+                                <button type="submit" class="inline-flex items-center justify-center gap-2 rounded bg-purple px-4 py-2 text-sm font-semibold text-white">
+                                    <i class="ri-save-line text-lg" aria-hidden="true"></i>
+                                    Spremi servis
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </section>
     </div>
 
@@ -450,6 +634,65 @@
             window.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape') close();
             });
+        })();
+
+        (() => {
+            const modal = document.querySelector('[data-service-modal]');
+            const openButton = document.querySelector('[data-service-open]');
+            const form = document.querySelector('[data-service-form]');
+            const typeSelect = document.querySelector('[data-service-type]');
+            const itemsContainer = document.querySelector('[data-service-items]');
+            const fileInput = document.querySelector('[data-service-files]');
+            const fileLabel = document.querySelector('[data-service-file-label]');
+            const itemCatalog = {{ service_item_catalog|json_encode|raw }};
+
+            if (!modal || !openButton || !form || !typeSelect || !itemsContainer) return;
+
+            const renderItems = () => {
+                itemsContainer.replaceChildren();
+                Object.entries(itemCatalog[typeSelect.value] || {}).forEach(([value, label]) => {
+                    const wrapper = document.createElement('label');
+                    wrapper.className = 'flex cursor-pointer items-start gap-2 rounded border border-black/10 px-3 py-2 text-sm text-black';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'items[]';
+                    checkbox.value = value;
+                    checkbox.className = 'form-checkbox outborder-purple mt-0.5';
+
+                    const text = document.createElement('span');
+                    text.textContent = label;
+                    wrapper.append(checkbox, text);
+                    itemsContainer.append(wrapper);
+                });
+            };
+            const close = () => {
+                modal.classList.remove('is-open');
+                document.body.style.overflow = '';
+            };
+            const open = () => {
+                modal.classList.add('is-open');
+                document.body.style.overflow = 'hidden';
+                renderItems();
+                typeSelect.focus();
+            };
+
+            typeSelect.addEventListener('change', renderItems);
+            openButton.addEventListener('click', open);
+            document.querySelectorAll('[data-service-close]').forEach((button) => button.addEventListener('click', close));
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) close();
+            });
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && modal.classList.contains('is-open')) close();
+            });
+            fileInput?.addEventListener('change', () => {
+                const count = fileInput.files?.length || 0;
+                fileLabel.textContent = count === 0
+                    ? 'Dodaj račune'
+                    : (count === 1 ? 'Odabran 1 račun' : `Odabrano računa: ${count}`);
+            });
+            renderItems();
         })();
     </script>
 {% endblock %}

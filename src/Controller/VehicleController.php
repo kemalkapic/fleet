@@ -12,9 +12,11 @@ use App\Form\VehicleType;
 use App\Repository\FleetDocumentRepository;
 use App\Repository\VehicleFuelEntryRepository;
 use App\Repository\VehicleRepository;
+use App\Repository\VehicleServiceRecordRepository;
 use App\Repository\VehicleTireRepository;
 use App\Service\Module\ModuleChecker;
 use App\Service\Tenant\TenantContext;
+use App\Service\Vehicle\VehicleServiceCatalog;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
@@ -114,6 +116,8 @@ class VehicleController extends AbstractController
         FleetDocumentRepository $documents,
         VehicleTireRepository $tires,
         VehicleFuelEntryRepository $fuelEntries,
+        VehicleServiceRecordRepository $serviceRecords,
+        VehicleServiceCatalog $serviceCatalog,
         EntityManagerInterface $entityManager,
     ): Response {
         $company = $tenantContext->requireCompany();
@@ -138,6 +142,9 @@ class VehicleController extends AbstractController
                     'documents' => $documents->findForVehicle($vehicle, $company),
                     'tires' => $tires->findForVehicle($vehicle, $company),
                     'fuel_entries' => $this->buildFuelEntryRows($fuelEntries->findForVehicle($vehicle, $company)),
+                    'service_records' => $serviceRecords->findForVehicle($vehicle, $company),
+                    'service_types' => $serviceCatalog->types(),
+                    'service_item_catalog' => $this->buildServiceItemCatalog($serviceCatalog),
                 ]);
             }
 
@@ -154,6 +161,9 @@ class VehicleController extends AbstractController
             'documents' => $documents->findForVehicle($vehicle, $company),
             'tires' => $tires->findForVehicle($vehicle, $company),
             'fuel_entries' => $this->buildFuelEntryRows($fuelEntries->findForVehicle($vehicle, $company)),
+            'service_records' => $serviceRecords->findForVehicle($vehicle, $company),
+            'service_types' => $serviceCatalog->types(),
+            'service_item_catalog' => $this->buildServiceItemCatalog($serviceCatalog),
         ]);
     }
 
@@ -427,5 +437,19 @@ class VehicleController extends AbstractController
     private function decimalFromRequest(Request $request, string $key): string
     {
         return str_replace(',', '.', trim((string) $request->request->get($key)));
+    }
+
+    /**
+     * @return array<string, array<string, string>>
+     */
+    private function buildServiceItemCatalog(VehicleServiceCatalog $catalog): array
+    {
+        $items = [];
+
+        foreach (array_keys($catalog->types()) as $type) {
+            $items[$type] = $catalog->itemsFor($type);
+        }
+
+        return $items;
     }
 }
