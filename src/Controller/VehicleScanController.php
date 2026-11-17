@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/vehicles/scan', name: 'vehicle_scan_')]
-#[IsGranted('ROLE_COMPANY_ADMIN')]
+#[IsGranted('ROLE_END_USER')]
 class VehicleScanController extends AbstractController
 {
     private const MAX_UPLOAD_SIZE = 8_000_000;
