@@ -39,7 +39,7 @@ class RegistrationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $company = (new Company())
                 ->setName($user->getFullName())
-                ->setVehicleLimit(5)
+                ->setVehicleLimit(1)
                 ->setDriverLimit(0)
                 ->setDocumentLimit(0);
             $vehicleModule = CompanyModule::forCompany($company, Module::VEHICLES)->setEnabled(true);
