@@ -160,7 +160,7 @@
 
                     </dl>
 
-                    <nav class="vehicle-card-tabs {{ is_granted('ROLE_COMPANY_ADMIN') ? '' : 'is-limited' }} mt-3 border-t border-black/5 pt-3 dark:border-white/5" aria-label="Sekcije vozila {{ vehicle.registrationNumber }}">
+                    <nav class="vehicle-card-tabs {{ is_granted('ROLE_COMPANY_ADMIN') ? '' : 'is-limited' }} mt-5 border-t border-black/5 pt-4 dark:border-white/5 sm:mt-3 sm:pt-3" aria-label="Sekcije vozila {{ vehicle.registrationNumber }}">
                         {% if is_granted('ROLE_COMPANY_ADMIN') %}
                         <a href="{{ path('vehicle_edit', {id: vehicle.id}) }}#vehicle-documents" class="vehicle-card-tab" title="Dokumenti">
                             <i class="ri-file-list-3-line" aria-hidden="true"></i>
