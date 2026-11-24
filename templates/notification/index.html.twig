@@ -42,7 +42,7 @@
                     {% endif %}
                 </span>
             </a>
-            {% if item.documentRenewalAvailable %}
+            {% if item.documentRenewalAvailable and is_granted('ROLE_COMPANY_ADMIN') %}
                 <button type="button"
                         class="inline-flex shrink-0 self-start items-center justify-center gap-1.5 rounded border border-purple/20 bg-purple/5 px-2.5 py-1.5 text-[11px] font-semibold text-purple shadow-sm transition hover:border-purple/40 hover:bg-purple/10 sm:self-center"
                         data-renew-notification

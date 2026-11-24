@@ -146,7 +146,7 @@
                             </div>
                             <div class="flex shrink-0 items-center gap-2 sm:gap-3">
                                 {% if app.user %}
-                                    {% if is_granted('ROLE_COMPANY_ADMIN') %}
+                                    {% if is_granted('ROLE_END_USER') %}
                                         {% set notification_box = notification_inbox() %}
                                         <div class="relative"
                                          x-data="{ notificationOpen: {{ app.request.query.get('notifications') == 'open' ? 'true' : 'false' }} }"

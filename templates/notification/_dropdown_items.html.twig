@@ -18,7 +18,7 @@
         </span>
         {% if not item.read %}<span class="notification-unread-dot" aria-label="Nepročitano"></span>{% endif %}
     </a>
-    {% if item.documentRenewalAvailable %}
+    {% if item.documentRenewalAvailable and is_granted('ROLE_COMPANY_ADMIN') %}
         <button type="button"
                 class="ml-11 mt-2 inline-flex items-center gap-1.5 rounded border border-purple/20 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-purple shadow-sm transition hover:bg-purple/5"
                 data-renew-notification

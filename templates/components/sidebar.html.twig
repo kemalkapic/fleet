@@ -94,6 +94,9 @@
                         </a>
                     </li>
 
+                {% endif %}
+
+                {% if is_granted('ROLE_END_USER') %}
                     <li class="menu nav-item">
                         <a href="{{ path('notification_index') }}" class="nav-link group {{ is_notifications ? 'active' : '' }}">
                             <div class="flex items-center">
