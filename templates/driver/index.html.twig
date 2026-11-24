@@ -29,6 +29,10 @@
             font-weight: 700;
         }
 
+        .driver-card-quick-actions {
+            padding-top: 0.75rem;
+        }
+
         @media (max-width: 768px) {
             .driver-card-details {
                 gap: 0.4rem 0.6rem;
@@ -132,7 +136,7 @@
                         </div>
                     </dl>
 
-                    <nav class="mt-5 border-t border-black/5 pt-5 dark:border-white/5 sm:mt-4" aria-label="Sekcije vozača {{ driver.fullName }}">
+                    <nav class="driver-card-quick-actions mt-5 border-t border-black/5 dark:border-white/5 sm:mt-4" aria-label="Sekcije vozača {{ driver.fullName }}">
                         <a href="{{ path('driver_edit', {id: driver.id}) }}#driver-documents" class="driver-card-tab" title="Dokumenti">
                             <i class="ri-file-list-3-line text-base" aria-hidden="true"></i>
                             <span>Dokumenti</span>
