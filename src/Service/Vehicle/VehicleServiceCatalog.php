@@ -37,6 +37,7 @@ final class VehicleServiceCatalog
                 'engine_oil' => 'Motorno ulje',
                 'oil_filter' => 'Filter ulja',
                 'air_filter' => 'Filter zraka',
+                'fuel_filter' => 'Filter goriva',
                 'air_dryer_filter' => 'Filter isušivač zraka',
                 'cabin_filter' => 'Filter kabine',
                 'fluid_check' => 'Kontrola i dopuna tečnosti',
