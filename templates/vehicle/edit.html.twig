@@ -529,13 +529,13 @@
                                     <i class="ri-attachment-2 text-xl" aria-hidden="true"></i>
                                     <span data-service-file-label>Dodaj račune</span>
                                 </label>
-                                <input id="service-receipts" type="file" name="receipts[]" accept="image/jpeg,image/png,image/webp,application/pdf" multiple class="sr-only" data-service-files>
+                                <input id="service-receipts" type="file" name="receipts[]" accept="image/jpeg,image/png,image/webp,application/pdf" multiple class="sr-only" data-service-files data-image-compression-url="{{ absolute_url(asset('assets/js/browser-image-compression.js')) }}">
                                 <p class="mt-1 text-xs text-muted">Do 5 JPG, PNG, WebP ili PDF datoteka, najviše 5 MB po datoteci.</p>
                             </div>
 
                             <div class="flex justify-end gap-2 border-t border-black/5 pt-3">
                                 <button type="button" class="inline-flex items-center justify-center rounded bg-black/5 px-4 py-2 text-sm font-semibold text-black" data-service-close>Odustani</button>
-                                <button type="submit" class="inline-flex items-center justify-center gap-2 rounded bg-purple px-4 py-2 text-sm font-semibold text-white">
+                                <button type="submit" class="inline-flex items-center justify-center gap-2 rounded bg-purple px-4 py-2 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60" data-service-submit>
                                     <i class="ri-save-line text-lg" aria-hidden="true"></i>
                                     Spremi servis
                                 </button>
@@ -681,7 +681,9 @@
             const itemsContainer = document.querySelector('[data-service-items]');
             const fileInput = document.querySelector('[data-service-files]');
             const fileLabel = document.querySelector('[data-service-file-label]');
+            const submitButton = document.querySelector('[data-service-submit]');
             const itemCatalog = {{ service_item_catalog|json_encode|raw }};
+            let isCompressing = false;
 
             if (!modal || !openButton || !form || !typeSelect || !itemsContainer) return;
 
@@ -723,11 +725,72 @@
             window.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape' && modal.classList.contains('is-open')) close();
             });
-            fileInput?.addEventListener('change', () => {
-                const count = fileInput.files?.length || 0;
-                fileLabel.textContent = count === 0
-                    ? 'Dodaj račune'
-                    : (count === 1 ? 'Odabran 1 račun' : `Odabrano računa: ${count}`);
+            fileInput?.addEventListener('change', async () => {
+                const selectedFiles = Array.from(fileInput.files || []);
+                if (selectedFiles.length === 0) {
+                    fileLabel.textContent = 'Dodaj račune';
+                    return;
+                }
+
+                if (typeof window.imageCompression !== 'function' || typeof DataTransfer === 'undefined') {
+                    fileLabel.textContent = selectedFiles.length === 1 ? 'Odabran 1 račun' : `Odabrano računa: ${selectedFiles.length}`;
+                    return;
+                }
+
+                isCompressing = true;
+                submitButton?.setAttribute('disabled', 'disabled');
+                const optimizedFiles = [];
+                let originalSize = 0;
+                let optimizedSize = 0;
+
+                for (const [index, file] of selectedFiles.entries()) {
+                    originalSize += file.size;
+
+                    if (!file.type.startsWith('image/')) {
+                        optimizedFiles.push(file);
+                        optimizedSize += file.size;
+                        continue;
+                    }
+
+                    fileLabel.textContent = `Optimiziranje slike ${index + 1}/${selectedFiles.length}...`;
+
+                    try {
+                        const optimized = await window.imageCompression(file, {
+                            maxSizeMB: 1.5,
+                            maxWidthOrHeight: 2200,
+                            initialQuality: 0.85,
+                            useWebWorker: true,
+                            preserveExif: false,
+                            libURL: fileInput.dataset.imageCompressionUrl,
+                        });
+                        optimizedFiles.push(optimized);
+                        optimizedSize += optimized.size;
+                    } catch (error) {
+                        console.warn('Optimizacija slike nije uspjela, šalje se original.', error);
+                        optimizedFiles.push(file);
+                        optimizedSize += file.size;
+                    }
+                }
+
+                try {
+                    const transfer = new DataTransfer();
+                    optimizedFiles.forEach((file) => transfer.items.add(file));
+                    fileInput.files = transfer.files;
+                } catch (error) {
+                    console.warn('Optimizirane slike nije moguće postaviti, šalju se originali.', error);
+                    optimizedSize = originalSize;
+                }
+
+                const savedBytes = Math.max(0, originalSize - optimizedSize);
+                const savedText = savedBytes >= 1024 * 100
+                    ? ` · ušteđeno ${(savedBytes / 1024 / 1024).toFixed(1)} MB`
+                    : '';
+                fileLabel.textContent = `${selectedFiles.length === 1 ? 'Odabran 1 račun' : `Odabrano računa: ${selectedFiles.length}`}${savedText}`;
+                isCompressing = false;
+                submitButton?.removeAttribute('disabled');
+            });
+            form.addEventListener('submit', (event) => {
+                if (isCompressing) event.preventDefault();
             });
             renderItems();
         })();
@@ -765,4 +828,9 @@
             });
         })();
     </script>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('assets/js/browser-image-compression.js') }}"></script>
 {% endblock %}
