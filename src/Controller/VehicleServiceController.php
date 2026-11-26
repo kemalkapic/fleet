@@ -171,6 +171,7 @@ class VehicleServiceController extends AbstractController
     #[Route('/service-receipts/{id}/download', name: 'receipt_download', methods: ['GET'])]
     public function downloadReceipt(
         int $id,
+        Request $request,
         TenantContext $tenantContext,
         ModuleChecker $moduleChecker,
         VehicleServiceAttachmentRepository $attachments,
@@ -192,10 +193,11 @@ class VehicleServiceController extends AbstractController
 
         $response = new BinaryFileResponse($path);
         $isImage = str_starts_with($attachment->getMimeType(), 'image/');
+        $forceDownload = $request->query->getBoolean('download');
         $response->headers->set('Content-Type', $attachment->getMimeType());
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->setContentDisposition(
-            $isImage ? ResponseHeaderBag::DISPOSITION_INLINE : ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            $isImage && !$forceDownload ? ResponseHeaderBag::DISPOSITION_INLINE : ResponseHeaderBag::DISPOSITION_ATTACHMENT,
             $attachment->getOriginalFilename(),
         );
 
