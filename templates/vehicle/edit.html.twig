@@ -26,12 +26,29 @@
         .vehicle-receipt-modal-backdrop.is-open { display: flex; }
         .vehicle-receipt-modal { display: flex; width: min(100%, 920px); max-height: 92vh; flex-direction: column; overflow: hidden; border-radius: 8px; background: #fff; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32); }
         .vehicle-receipt-modal-image { display: block; width: 100%; max-height: calc(92vh - 64px); object-fit: contain; background: #f8fafc; }
-        .vehicle-service-timeline { position: relative; margin-left: 0.55rem; padding-left: 1.5rem; }
-        .vehicle-service-timeline::before { content: ''; position: absolute; left: 0; top: 0.5rem; bottom: 0.5rem; width: 2px; background: rgb(109 91 255 / 0.18); }
-        .vehicle-service-entry { position: relative; }
-        .vehicle-service-entry::before { content: ''; position: absolute; left: -1.86rem; top: 1.15rem; width: 0.75rem; height: 0.75rem; border: 3px solid #fff; border-radius: 999px; background: rgb(109 91 255); box-shadow: 0 0 0 2px rgb(109 91 255 / 0.2); }
+        .vehicle-service-timeline { position: relative; margin-left: 0.65rem; padding-left: 1.75rem; }
+        .vehicle-service-timeline::before { content: ''; position: absolute; left: 0.1rem; top: 0.75rem; bottom: 0.75rem; width: 2px; background: #dbe3ee; }
+        .vehicle-service-entry { --service-accent: #6d5bff; position: relative; border-left: 3px solid var(--service-accent); box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05); transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
+        .vehicle-service-entry:hover { box-shadow: 0 9px 24px rgba(15, 23, 42, 0.09); transform: translateY(-1px); }
+        .vehicle-service-entry--small { --service-accent: #16a34a; }
+        .vehicle-service-entry--large { --service-accent: #6d5bff; }
+        .vehicle-service-entry--emergency { --service-accent: #dc2626; }
+        .vehicle-service-entry--other { --service-accent: #0284c7; }
+        .vehicle-service-entry::before { content: ''; position: absolute; left: -2.3rem; top: 1rem; width: 1rem; height: 1rem; border: 3px solid var(--service-accent); border-radius: 999px; background: #fff; box-shadow: 0 0 0 4px #f8fafc; }
         .vehicle-service-actions { position: absolute; top: 0.75rem; right: 0.75rem; z-index: 10; display: flex; align-items: center; gap: 0.25rem; }
         .vehicle-service-summary { min-width: 0; padding-right: 5.25rem; }
+        .vehicle-service-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem; }
+        .vehicle-service-meta-item { display: inline-flex; min-height: 1.8rem; align-items: center; gap: 0.3rem; border: 1px solid rgba(15, 23, 42, 0.07); border-radius: 6px; background: #f8fafc; padding: 0.25rem 0.55rem; color: #475569; font-size: 0.75rem; font-weight: 600; line-height: 1.2; }
+        .vehicle-service-meta-item i { color: var(--service-accent); font-size: 0.95rem; }
+        .vehicle-service-work { margin-top: 0.9rem; border-top: 1px solid rgba(15, 23, 42, 0.07); padding-top: 0.75rem; }
+        .vehicle-service-work-title { margin-bottom: 0.5rem; color: #94a3b8; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
+        .vehicle-service-work-item { display: flex; align-items: flex-start; gap: 0.4rem; border-radius: 6px; background: color-mix(in srgb, var(--service-accent) 7%, white); padding: 0.45rem 0.55rem; color: #1e293b; font-size: 0.8rem; }
+        .vehicle-service-work-item i { margin-top: 0.1rem; flex: 0 0 auto; color: var(--service-accent); }
+        .dark .vehicle-service-timeline::before { background: #334155; }
+        .dark .vehicle-service-entry::before { background: #1e293b; box-shadow: 0 0 0 4px #111827; }
+        .dark .vehicle-service-meta-item { border-color: rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.04); color: #cbd5e1; }
+        .dark .vehicle-service-work { border-top-color: rgba(255, 255, 255, 0.08); }
+        .dark .vehicle-service-work-item { background: rgba(255, 255, 255, 0.04); color: #e2e8f0; }
         @media (min-width: 768px) { .vehicle-edit-tabs { display: flex; overflow-x: auto; padding-bottom: 0.25rem; } .vehicle-edit-tab { justify-content: flex-start; white-space: nowrap; padding: 0.55rem 0.8rem; font-size: 0.875rem; } .vehicle-edit-tab svg { width: 1.25rem; height: 1.25rem; } }
         @media (min-width: 640px) { .vehicle-service-actions { top: 1rem; right: 1rem; } }
         @media (min-width: 768px) { .vehicle-tire-grid { grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr) minmax(0, 0.9fr) minmax(0, 0.7fr) auto; align-items: end; } }
@@ -394,7 +411,7 @@
                             additionalWork: record.additionalWork,
                             notes: record.notes
                         } %}
-                        <article class="vehicle-service-entry relative rounded border border-black/10 bg-white p-3 dark:border-darkborder dark:bg-darklight sm:p-4">
+                        <article class="vehicle-service-entry vehicle-service-entry--{{ record.type }} relative rounded border border-black/10 bg-white p-3 dark:border-darkborder dark:bg-darklight sm:p-4">
                             <div class="vehicle-service-actions">
                                 <button type="button"
                                         class="inline-flex size-9 items-center justify-center rounded bg-purple/10 text-purple hover:bg-purple/20"
@@ -418,31 +435,43 @@
                                 <div class="vehicle-service-summary">
                                     <div class="flex flex-wrap items-center gap-2">
                                         <span class="rounded px-2 py-1 text-xs font-semibold {{ badge_class }}">{{ service_label }}</span>
-                                        <span class="text-sm font-semibold text-black dark:text-white">{{ record.serviceDate|date('d.m.Y') }}</span>
                                     </div>
-                                    <p class="mt-2 text-sm text-muted">
-                                        <i class="ri-dashboard-3-line mr-1" aria-hidden="true"></i>
-                                        {{ record.odometerKm|number_format(0, ',', '.') }} km
+                                    <div class="vehicle-service-meta">
+                                        <span class="vehicle-service-meta-item">
+                                            <i class="ri-calendar-line" aria-hidden="true"></i>
+                                            {{ record.serviceDate|date('d.m.Y') }}
+                                        </span>
+                                        <span class="vehicle-service-meta-item">
+                                            <i class="ri-dashboard-3-line" aria-hidden="true"></i>
+                                            {{ record.odometerKm|number_format(0, ',', '.') }} km
+                                        </span>
                                         {% if record.serviceProvider %}
-                                            <span class="mx-1">&middot;</span>
-                                            <i class="ri-map-pin-line mr-1" aria-hidden="true"></i>{{ record.serviceProvider }}
+                                            <span class="vehicle-service-meta-item">
+                                                <i class="ri-map-pin-line" aria-hidden="true"></i>
+                                                {{ record.serviceProvider }}
+                                            </span>
                                         {% endif %}
                                         {% if record.costBam is not null %}
-                                            <span class="mx-1">&middot;</span>
-                                            <i class="ri-money-dollar-circle-line mr-1" aria-hidden="true"></i>{{ record.costBam|number_format(2, ',', '.') }} KM
+                                            <span class="vehicle-service-meta-item">
+                                                <i class="ri-money-dollar-circle-line" aria-hidden="true"></i>
+                                                {{ record.costBam|number_format(2, ',', '.') }} KM
+                                            </span>
                                         {% endif %}
-                                    </p>
+                                    </div>
                                 </div>
                             </div>
 
                             {% if record.items|length %}
-                                <div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                                    {% for item in record.items %}
-                                        <div class="flex items-start gap-2 text-sm text-black dark:text-white">
-                                            <i class="ri-checkbox-circle-fill mt-0.5 text-success" aria-hidden="true"></i>
-                                            <span>{{ service_item_catalog[record.type][item]|default(item) }}</span>
-                                        </div>
-                                    {% endfor %}
+                                <div class="vehicle-service-work">
+                                    <p class="vehicle-service-work-title">Izvršeni radovi</p>
+                                    <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                        {% for item in record.items %}
+                                            <div class="vehicle-service-work-item">
+                                                <i class="ri-check-line" aria-hidden="true"></i>
+                                                <span>{{ service_item_catalog[record.type][item]|default(item) }}</span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
                                 </div>
                             {% endif %}
 
