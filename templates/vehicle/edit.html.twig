@@ -379,9 +379,40 @@
                             : (record.type == 'large'
                                 ? 'bg-purple/10 text-purple'
                                 : (record.type == 'emergency' ? 'bg-danger/10 text-danger' : 'bg-info/10 text-info')) %}
-                        <article class="vehicle-service-entry rounded border border-black/10 bg-white p-3 dark:border-darkborder dark:bg-darklight sm:p-4">
+                        {% set service_edit_data = {
+                            action: path('vehicle_service_update', {vehicleId: vehicle.id, serviceId: record.id}),
+                            token: csrf_token('update_vehicle_service_' ~ record.id),
+                            type: record.type,
+                            serviceDate: record.serviceDate|date('Y-m-d'),
+                            odometerKm: record.odometerKm,
+                            costBam: record.costBam,
+                            serviceProvider: record.serviceProvider,
+                            items: record.items,
+                            additionalWork: record.additionalWork,
+                            notes: record.notes
+                        } %}
+                        <article class="vehicle-service-entry relative rounded border border-black/10 bg-white p-3 dark:border-darkborder dark:bg-darklight sm:p-4">
+                            <div class="absolute right-3 top-3 z-10 flex items-center gap-1 sm:right-4 sm:top-4">
+                                <button type="button"
+                                        class="inline-flex size-9 items-center justify-center rounded bg-purple/10 text-purple hover:bg-purple/20"
+                                        data-service-edit-record="{{ service_edit_data|json_encode|e('html_attr') }}"
+                                        title="Uredi servis"
+                                        aria-label="Uredi servis">
+                                    <i class="ri-edit-line text-lg" aria-hidden="true"></i>
+                                </button>
+                                <form method="post"
+                                      action="{{ path('vehicle_service_delete', {vehicleId: vehicle.id, serviceId: record.id}) }}"
+                                      data-service-delete-form
+                                      data-service-delete-title="{{ service_label }}"
+                                      data-service-delete-date="{{ record.serviceDate|date('d.m.Y') }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_vehicle_service_' ~ record.id) }}">
+                                    <button type="submit" class="inline-flex size-9 items-center justify-center rounded bg-danger/10 text-danger hover:bg-danger/20" title="Obriši servis" aria-label="Obriši servis">
+                                        <i class="ri-delete-bin-line text-lg" aria-hidden="true"></i>
+                                    </button>
+                                </form>
+                            </div>
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                <div class="min-w-0">
+                                <div class="min-w-0 pr-20">
                                     <div class="flex flex-wrap items-center gap-2">
                                         <span class="rounded px-2 py-1 text-xs font-semibold {{ badge_class }}">{{ service_label }}</span>
                                         <span class="text-sm font-semibold text-black dark:text-white">{{ record.serviceDate|date('d.m.Y') }}</span>
@@ -393,22 +424,11 @@
                                             <span class="mx-1">&middot;</span>
                                             <i class="ri-map-pin-line mr-1" aria-hidden="true"></i>{{ record.serviceProvider }}
                                         {% endif %}
+                                        {% if record.costBam is not null %}
+                                            <span class="mx-1">&middot;</span>
+                                            <i class="ri-money-dollar-circle-line mr-1" aria-hidden="true"></i>{{ record.costBam|number_format(2, ',', '.') }} KM
+                                        {% endif %}
                                     </p>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    {% if record.costBam is not null %}
-                                        <span class="rounded bg-black/[0.04] px-2 py-1 text-sm font-semibold text-black dark:bg-white/5 dark:text-white">{{ record.costBam|number_format(2, ',', '.') }} KM</span>
-                                    {% endif %}
-                                    <form method="post"
-                                          action="{{ path('vehicle_service_delete', {vehicleId: vehicle.id, serviceId: record.id}) }}"
-                                          data-service-delete-form
-                                          data-service-delete-title="{{ service_label }}"
-                                          data-service-delete-date="{{ record.serviceDate|date('d.m.Y') }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_vehicle_service_' ~ record.id) }}">
-                                        <button type="submit" class="inline-flex size-9 items-center justify-center rounded bg-danger/10 text-danger" title="Obriši servis" aria-label="Obriši servis">
-                                            <i class="ri-delete-bin-line text-lg" aria-hidden="true"></i>
-                                        </button>
-                                    </form>
                                 </div>
                             </div>
 
@@ -476,16 +496,22 @@
                     <div class="vehicle-service-modal" role="dialog" aria-modal="true" aria-labelledby="vehicle-service-modal-title">
                         <div class="flex items-start justify-between gap-4">
                             <div>
-                                <h3 id="vehicle-service-modal-title" class="text-base font-semibold text-black">Novi servis</h3>
-                                <p class="mt-1 text-sm text-muted">Unesite podatke i označite izvršene radove.</p>
+                                <h3 id="vehicle-service-modal-title" class="text-base font-semibold text-black" data-service-modal-title>Novi servis</h3>
+                                <p class="mt-1 text-sm text-muted" data-service-modal-description>Unesite podatke i označite izvršene radove.</p>
                             </div>
                             <button type="button" class="inline-flex size-9 items-center justify-center rounded text-muted hover:bg-black/5" data-service-close aria-label="Zatvori">
                                 <i class="ri-close-line text-xl" aria-hidden="true"></i>
                             </button>
                         </div>
 
-                        <form method="post" action="{{ path('vehicle_service_add', {vehicleId: vehicle.id}) }}" enctype="multipart/form-data" class="mt-4 space-y-4" data-service-form>
-                            <input type="hidden" name="_token" value="{{ csrf_token('add_vehicle_service_' ~ vehicle.id) }}">
+                        <form method="post"
+                              action="{{ path('vehicle_service_add', {vehicleId: vehicle.id}) }}"
+                              enctype="multipart/form-data"
+                              class="mt-4 space-y-4"
+                              data-service-form
+                              data-service-add-action="{{ path('vehicle_service_add', {vehicleId: vehicle.id}) }}"
+                              data-service-add-token="{{ csrf_token('add_vehicle_service_' ~ vehicle.id) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('add_vehicle_service_' ~ vehicle.id) }}" data-service-token>
 
                             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <div>
@@ -544,7 +570,7 @@
                                 <button type="button" class="inline-flex items-center justify-center rounded bg-black/5 px-4 py-2 text-sm font-semibold text-black" data-service-close>Odustani</button>
                                 <button type="submit" class="inline-flex items-center justify-center gap-2 rounded bg-purple px-4 py-2 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60" data-service-submit>
                                     <i class="ri-save-line text-lg" aria-hidden="true"></i>
-                                    Spremi servis
+                                    <span data-service-submit-label>Spremi servis</span>
                                 </button>
                             </div>
                         </form>
@@ -712,12 +738,16 @@
             const fileInput = document.querySelector('[data-service-files]');
             const fileLabel = document.querySelector('[data-service-file-label]');
             const submitButton = document.querySelector('[data-service-submit]');
+            const submitLabel = document.querySelector('[data-service-submit-label]');
+            const tokenInput = document.querySelector('[data-service-token]');
+            const modalTitle = document.querySelector('[data-service-modal-title]');
+            const modalDescription = document.querySelector('[data-service-modal-description]');
             const itemCatalog = {{ service_item_catalog|json_encode|raw }};
             let isCompressing = false;
 
-            if (!modal || !openButton || !form || !typeSelect || !itemsContainer) return;
+            if (!modal || !openButton || !form || !typeSelect || !itemsContainer || !submitLabel || !tokenInput || !modalTitle || !modalDescription) return;
 
-            const renderItems = () => {
+            const renderItems = (selectedItems = []) => {
                 itemsContainer.replaceChildren();
                 Object.entries(itemCatalog[typeSelect.value] || {}).forEach(([value, label]) => {
                     const wrapper = document.createElement('label');
@@ -727,6 +757,7 @@
                     checkbox.type = 'checkbox';
                     checkbox.name = 'items[]';
                     checkbox.value = value;
+                    checkbox.checked = selectedItems.includes(value);
                     checkbox.className = 'form-checkbox outborder-purple mt-0.5';
 
                     const text = document.createElement('span');
@@ -735,19 +766,55 @@
                     itemsContainer.append(wrapper);
                 });
             };
+            const resetUpload = () => {
+                if (fileInput) fileInput.value = '';
+                if (fileLabel) fileLabel.textContent = 'Dodaj račune';
+            };
             const close = () => {
                 modal.classList.remove('is-open');
                 document.body.style.overflow = '';
             };
-            const open = () => {
+            const show = () => {
                 modal.classList.add('is-open');
                 document.body.style.overflow = 'hidden';
-                renderItems();
                 typeSelect.focus();
             };
+            const openNew = () => {
+                form.reset();
+                form.action = form.dataset.serviceAddAction;
+                tokenInput.value = form.dataset.serviceAddToken;
+                modalTitle.textContent = 'Novi servis';
+                modalDescription.textContent = 'Unesite podatke i označite izvršene radove.';
+                submitLabel.textContent = 'Spremi servis';
+                resetUpload();
+                renderItems();
+                show();
+            };
+            const openEdit = (button) => {
+                const record = JSON.parse(button.dataset.serviceEditRecord || '{}');
+                form.reset();
+                form.action = record.action || form.dataset.serviceAddAction;
+                tokenInput.value = record.token || '';
+                typeSelect.value = record.type || 'small';
+                form.elements.namedItem('serviceDate').value = record.serviceDate || '';
+                form.elements.namedItem('odometerKm').value = record.odometerKm || '';
+                form.elements.namedItem('costBam').value = record.costBam || '';
+                form.elements.namedItem('serviceProvider').value = record.serviceProvider || '';
+                form.elements.namedItem('additionalWork').value = record.additionalWork || '';
+                form.elements.namedItem('notes').value = record.notes || '';
+                modalTitle.textContent = 'Uredi servis';
+                modalDescription.textContent = 'Ažurirajte podatke servisa ili dodajte nove račune.';
+                submitLabel.textContent = 'Sačuvaj promjene';
+                resetUpload();
+                renderItems(Array.isArray(record.items) ? record.items : []);
+                show();
+            };
 
-            typeSelect.addEventListener('change', renderItems);
-            openButton.addEventListener('click', open);
+            typeSelect.addEventListener('change', () => renderItems());
+            openButton.addEventListener('click', openNew);
+            document.querySelectorAll('[data-service-edit-record]').forEach((button) => {
+                button.addEventListener('click', () => openEdit(button));
+            });
             document.querySelectorAll('[data-service-close]').forEach((button) => button.addEventListener('click', close));
             modal.addEventListener('click', (event) => {
                 if (event.target === modal) close();

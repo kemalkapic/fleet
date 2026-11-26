@@ -132,6 +132,106 @@ class VehicleServiceController extends AbstractController
         return $this->redirectToServiceTab($vehicle);
     }
 
+    #[Route('/{vehicleId}/services/{serviceId}', name: 'update', methods: ['POST'])]
+    public function update(
+        int $vehicleId,
+        int $serviceId,
+        Request $request,
+        TenantContext $tenantContext,
+        ModuleChecker $moduleChecker,
+        VehicleRepository $vehicles,
+        VehicleServiceRecordRepository $serviceRecords,
+        VehicleServiceCatalog $catalog,
+        VehicleServiceReceiptStorage $storage,
+        EntityManagerInterface $entityManager,
+        LoggerInterface $logger,
+    ): Response {
+        $company = $tenantContext->requireCompany();
+        $this->denyAccessUnlessGrantedForModule($moduleChecker, $company);
+        $vehicle = $this->requireVehicle($vehicleId, $company, $vehicles);
+        $record = $serviceRecords->findOneForVehicle($serviceId, $vehicle, $company);
+
+        if (!$record instanceof VehicleServiceRecord) {
+            throw new NotFoundHttpException();
+        }
+
+        if (!$this->isCsrfTokenValid('update_vehicle_service_'.$record->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Invalid vehicle service update token.');
+        }
+
+        $type = (string) $request->request->get('type');
+        $serviceDate = $this->parseDate((string) $request->request->get('serviceDate'));
+        $odometerKm = $request->request->getInt('odometerKm');
+
+        if (!array_key_exists($type, $catalog->types()) || !$serviceDate instanceof \DateTimeImmutable || $odometerKm <= 0) {
+            $this->addFlash('error', 'Odaberite vrstu servisa te unesite ispravan datum i kilometražu.');
+
+            return $this->redirectToServiceTab($vehicle);
+        }
+
+        $receipts = $this->receiptFiles($request);
+        $fileError = $this->validateReceipts($receipts, count($record->getAttachments()));
+
+        if ($fileError !== null) {
+            $this->addFlash('error', $fileError);
+
+            return $this->redirectToServiceTab($vehicle);
+        }
+
+        $submittedItems = $request->request->all('items');
+        $record
+            ->setType($type)
+            ->setServiceDate($serviceDate)
+            ->setOdometerKm($odometerKm)
+            ->setServiceProvider((string) $request->request->get('serviceProvider'))
+            ->setCostBam((string) $request->request->get('costBam'))
+            ->setItems($catalog->validSelectedItems($type, is_array($submittedItems) ? $submittedItems : []))
+            ->setAdditionalWork((string) $request->request->get('additionalWork'))
+            ->setNotes((string) $request->request->get('notes'));
+
+        $storedReceiptKeys = [];
+
+        try {
+            foreach ($receipts as $receipt) {
+                $size = $receipt->getSize();
+                $storageKey = $storage->store($receipt, $company);
+                $storedReceiptKeys[] = $storageKey;
+                $record->addAttachment((new VehicleServiceAttachment())->setStoredFile(
+                    $storageKey,
+                    $receipt->getClientOriginalName(),
+                    $this->receiptMimeType($receipt),
+                    is_int($size) ? $size : null,
+                ));
+            }
+
+            if ($vehicle->getCurrentMileage() === null || $odometerKm > $vehicle->getCurrentMileage()) {
+                $vehicle->setCurrentMileage($odometerKm);
+            }
+
+            $entityManager->flush();
+        } catch (\Throwable $exception) {
+            foreach ($storedReceiptKeys as $storageKey) {
+                $storage->remove($storageKey);
+            }
+
+            $logger->error('Vehicle service could not be updated.', [
+                'companyId' => $company->getId(),
+                'vehicleId' => $vehicle->getId(),
+                'serviceId' => $record->getId(),
+                'exception' => $exception,
+            ]);
+            $this->addFlash('error', $exception instanceof FileException
+                ? 'Račun nije moguće spremiti. Provjerite dozvole direktorija za pohranu na serveru.'
+                : 'Servis trenutno nije moguće urediti. Pokušajte ponovo ili kontaktirajte administratora.');
+
+            return $this->redirectToServiceTab($vehicle);
+        }
+
+        $this->addFlash('success', 'Podaci servisa su ažurirani.');
+
+        return $this->redirectToServiceTab($vehicle);
+    }
+
     #[Route('/{vehicleId}/services/{serviceId}/delete', name: 'delete', methods: ['POST'])]
     public function delete(
         int $vehicleId,
@@ -252,10 +352,10 @@ class VehicleServiceController extends AbstractController
     }
 
     /** @param list<UploadedFile> $receipts */
-    private function validateReceipts(array $receipts): ?string
+    private function validateReceipts(array $receipts, int $existingCount = 0): ?string
     {
-        if (count($receipts) > self::MAX_RECEIPTS) {
-            return 'Možete dodati najviše 5 računa po servisu.';
+        if ($existingCount + count($receipts) > self::MAX_RECEIPTS) {
+            return 'Servis može imati najviše 5 računa.';
         }
 
         foreach ($receipts as $receipt) {
