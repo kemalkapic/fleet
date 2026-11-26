@@ -49,6 +49,38 @@
             line-height: 1;
         }
 
+        .vehicle-card-brand {
+            display: flex;
+            flex: none;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.35rem;
+        }
+
+        .vehicle-card-brand-logo {
+            display: block;
+            width: 3.25rem;
+            height: 2.25rem;
+            object-fit: contain;
+            object-position: right center;
+            opacity: 0.86;
+        }
+
+        .vehicle-card-brand-fallback {
+            display: inline-flex;
+            width: 3.25rem;
+            height: 2.25rem;
+            align-items: center;
+            justify-content: flex-end;
+            color: #94a3b8;
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .dark .vehicle-card-brand-logo {
+            filter: invert(1);
+        }
+
         @media (max-width: 768px) {
             .vehicle-card-details {
                 gap: 0.4rem 0.6rem;
@@ -103,6 +135,23 @@
         <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             {% for vehicle in vehicles %}
                 {% set vehicle_name = vehicle.manufacturer or vehicle.model ? (vehicle.manufacturer ~ ' ' ~ vehicle.model)|trim : 'Vozilo bez modela' %}
+                {% set manufacturer_key = vehicle.manufacturer|default('')|replace({'Š': 'S', 'š': 's', '-': ' ', '_': ' '})|lower|trim %}
+                {% set brand_icon = null %}
+                {% if 'mercedes' in manufacturer_key %}
+                    {% set brand_icon = 'mercedes' %}
+                {% elseif 'skoda' in manufacturer_key %}
+                    {% set brand_icon = 'skoda' %}
+                {% elseif manufacturer_key == 'vw' or 'volkswagen' in manufacturer_key %}
+                    {% set brand_icon = 'volkswagen' %}
+                {% elseif manufacturer_key == 'man' or manufacturer_key starts with 'man ' %}
+                    {% set brand_icon = 'man' %}
+                {% elseif manufacturer_key == 'daf' or manufacturer_key starts with 'daf ' %}
+                    {% set brand_icon = 'daf' %}
+                {% elseif 'iveco' in manufacturer_key %}
+                    {% set brand_icon = 'iveco' %}
+                {% elseif 'fiat' in manufacturer_key %}
+                    {% set brand_icon = 'fiat' %}
+                {% endif %}
 
                 <article class="flex flex-col rounded border border-black/10 bg-white p-4 dark:border-darkborder dark:bg-darklight">
                     <div class="flex items-start justify-between gap-3">
@@ -110,7 +159,19 @@
                             <p class="truncate text-base font-semibold text-black dark:text-white sm:text-lg">{{ vehicle.registrationNumber }}</p>
                             <p class="mt-0.5 truncate text-xs text-muted sm:mt-1 sm:text-sm">{{ vehicle_name }}</p>
                         </div>
-                        <span class="flex-none rounded bg-info/10 px-2 py-1 text-xs font-semibold text-info">{{ status_labels[vehicle.status]|default(vehicle.status) }}</span>
+                        <div class="vehicle-card-brand">
+                            {% if brand_icon %}
+                                <img src="{{ asset('assets/images/vehicle-brands/' ~ brand_icon ~ '.svg') }}"
+                                     alt="{{ vehicle.manufacturer }}"
+                                     class="vehicle-card-brand-logo"
+                                     loading="lazy">
+                            {% else %}
+                                <span class="vehicle-card-brand-fallback" aria-hidden="true">
+                                    <i class="ri-roadster-line"></i>
+                                </span>
+                            {% endif %}
+                            <span class="rounded bg-info/10 px-2 py-1 text-xs font-semibold text-info">{{ status_labels[vehicle.status]|default(vehicle.status) }}</span>
+                        </div>
                     </div>
 
                     <dl class="vehicle-card-details mt-3 text-sm">
