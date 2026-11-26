@@ -15,8 +15,10 @@ use App\Service\Storage\VehicleServiceReceiptStorage;
 use App\Service\Tenant\TenantContext;
 use App\Service\Vehicle\VehicleServiceCatalog;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,6 +45,7 @@ class VehicleServiceController extends AbstractController
         VehicleServiceCatalog $catalog,
         VehicleServiceReceiptStorage $storage,
         EntityManagerInterface $entityManager,
+        LoggerInterface $logger,
     ): Response {
         $company = $tenantContext->requireCompany();
         $this->denyAccessUnlessGrantedForModule($moduleChecker, $company);
@@ -85,23 +88,44 @@ class VehicleServiceController extends AbstractController
             ->setAdditionalWork((string) $request->request->get('additionalWork'))
             ->setNotes((string) $request->request->get('notes'));
 
-        foreach ($receipts as $receipt) {
-            $size = $receipt->getSize();
-            $attachment = (new VehicleServiceAttachment())->setStoredFile(
-                $storage->store($receipt, $company),
-                $receipt->getClientOriginalName(),
-                $receipt->getMimeType() ?: 'application/octet-stream',
-                is_int($size) ? $size : null,
-            );
-            $record->addAttachment($attachment);
-        }
+        $storedReceiptKeys = [];
 
-        if ($vehicle->getCurrentMileage() === null || $odometerKm > $vehicle->getCurrentMileage()) {
-            $vehicle->setCurrentMileage($odometerKm);
-        }
+        try {
+            foreach ($receipts as $receipt) {
+                $size = $receipt->getSize();
+                $storageKey = $storage->store($receipt, $company);
+                $storedReceiptKeys[] = $storageKey;
+                $attachment = (new VehicleServiceAttachment())->setStoredFile(
+                    $storageKey,
+                    $receipt->getClientOriginalName(),
+                    $this->receiptMimeType($receipt),
+                    is_int($size) ? $size : null,
+                );
+                $record->addAttachment($attachment);
+            }
 
-        $entityManager->persist($record);
-        $entityManager->flush();
+            if ($vehicle->getCurrentMileage() === null || $odometerKm > $vehicle->getCurrentMileage()) {
+                $vehicle->setCurrentMileage($odometerKm);
+            }
+
+            $entityManager->persist($record);
+            $entityManager->flush();
+        } catch (\Throwable $exception) {
+            foreach ($storedReceiptKeys as $storageKey) {
+                $storage->remove($storageKey);
+            }
+
+            $logger->error('Vehicle service receipt could not be saved.', [
+                'companyId' => $company->getId(),
+                'vehicleId' => $vehicle->getId(),
+                'exception' => $exception,
+            ]);
+            $this->addFlash('error', $exception instanceof FileException
+                ? 'Račun nije moguće spremiti. Provjerite dozvole direktorija za pohranu na serveru.'
+                : 'Servis trenutno nije moguće spremiti. Pokušajte ponovo ili kontaktirajte administratora.');
+
+            return $this->redirectToServiceTab($vehicle);
+        }
 
         $this->addFlash('success', 'Servis je dodan u servisnu knjigu.');
 
@@ -235,11 +259,36 @@ class VehicleServiceController extends AbstractController
                 return 'Svaki račun može imati najviše 5 MB.';
             }
 
-            if (!in_array($receipt->getMimeType(), self::ALLOWED_RECEIPT_TYPES, true)) {
+            if (!$this->hasAllowedReceiptType($receipt)) {
                 return 'Račun mora biti JPG, PNG, WebP ili PDF datoteka.';
             }
         }
 
         return null;
+    }
+
+    private function hasAllowedReceiptType(UploadedFile $receipt): bool
+    {
+        $extension = mb_strtolower($receipt->getClientOriginalExtension());
+        if (!in_array($extension, ['jpg', 'jpeg', 'png', 'webp', 'pdf'], true)) {
+            return false;
+        }
+
+        return in_array($this->receiptMimeType($receipt), self::ALLOWED_RECEIPT_TYPES, true);
+    }
+
+    private function receiptMimeType(UploadedFile $receipt): string
+    {
+        try {
+            $serverMimeType = $receipt->getMimeType();
+        } catch (\LogicException) {
+            $serverMimeType = null;
+        }
+
+        if (is_string($serverMimeType) && $serverMimeType !== 'application/octet-stream') {
+            return mb_strtolower($serverMimeType);
+        }
+
+        return mb_strtolower($receipt->getClientMimeType() ?: 'application/octet-stream');
     }
 }

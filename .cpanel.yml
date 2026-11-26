@@ -3,5 +3,6 @@ deployment:
   tasks:
     - export APPPATH=$HOME/fleet.kmmapps.com
     - cd $APPPATH && /usr/local/bin/composer install --no-dev --optimize-autoloader
+    - cd $APPPATH && mkdir -p var/storage/service-receipts && chmod 775 var var/storage var/storage/service-receipts
     - cd $APPPATH && /usr/local/bin/php bin/console doctrine:migrations:migrate --no-interaction --env=prod
     - cd $APPPATH && /usr/local/bin/php bin/console cache:clear --env=prod
