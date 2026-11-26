@@ -191,7 +191,13 @@ class VehicleServiceController extends AbstractController
         }
 
         $response = new BinaryFileResponse($path);
-        $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $attachment->getOriginalFilename());
+        $isImage = str_starts_with($attachment->getMimeType(), 'image/');
+        $response->headers->set('Content-Type', $attachment->getMimeType());
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        $response->setContentDisposition(
+            $isImage ? ResponseHeaderBag::DISPOSITION_INLINE : ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            $attachment->getOriginalFilename(),
+        );
 
         return $response;
     }

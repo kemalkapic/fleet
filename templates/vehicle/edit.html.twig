@@ -19,6 +19,10 @@
         .vehicle-service-modal-backdrop { position: fixed; inset: 0; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.58); }
         .vehicle-service-modal-backdrop.is-open { display: flex; }
         .vehicle-service-modal { width: min(100%, 760px); max-height: 92vh; overflow-y: auto; border-radius: 8px; background: #fff; border: 1px solid rgba(0, 0, 0, 0.1); padding: 1rem; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24); }
+        .vehicle-receipt-modal-backdrop { position: fixed; inset: 0; z-index: 10020; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.72); }
+        .vehicle-receipt-modal-backdrop.is-open { display: flex; }
+        .vehicle-receipt-modal { display: flex; width: min(100%, 920px); max-height: 92vh; flex-direction: column; overflow: hidden; border-radius: 8px; background: #fff; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32); }
+        .vehicle-receipt-modal-image { display: block; width: 100%; max-height: calc(92vh - 64px); object-fit: contain; background: #f8fafc; }
         .vehicle-service-timeline { position: relative; margin-left: 0.55rem; padding-left: 1.5rem; }
         .vehicle-service-timeline::before { content: ''; position: absolute; left: 0; top: 0.5rem; bottom: 0.5rem; width: 2px; background: rgb(109 91 255 / 0.18); }
         .vehicle-service-entry { position: relative; }
@@ -432,10 +436,21 @@
                             {% if record.attachments|length %}
                                 <div class="mt-3 flex flex-wrap gap-2 border-t border-black/5 pt-3 dark:border-white/5">
                                     {% for attachment in record.attachments %}
-                                        <a href="{{ path('vehicle_service_receipt_download', {id: attachment.id}) }}" class="inline-flex max-w-full items-center gap-2 rounded bg-info/10 px-3 py-2 text-xs font-semibold text-info">
-                                            <i class="{{ attachment.mimeType == 'application/pdf' ? 'ri-file-pdf-2-line' : 'ri-image-line' }} text-base" aria-hidden="true"></i>
-                                            <span class="truncate">{{ attachment.originalFilename }}</span>
-                                        </a>
+                                        {% if attachment.mimeType starts with 'image/' %}
+                                            <button type="button"
+                                                    class="inline-flex max-w-full items-center gap-2 rounded bg-info/10 px-3 py-2 text-xs font-semibold text-info"
+                                                    data-receipt-preview
+                                                    data-receipt-url="{{ path('vehicle_service_receipt_download', {id: attachment.id}) }}"
+                                                    data-receipt-title="{{ attachment.originalFilename }}">
+                                                <i class="ri-image-line text-base" aria-hidden="true"></i>
+                                                <span class="truncate">{{ attachment.originalFilename }}</span>
+                                            </button>
+                                        {% else %}
+                                            <a href="{{ path('vehicle_service_receipt_download', {id: attachment.id}) }}" class="inline-flex max-w-full items-center gap-2 rounded bg-info/10 px-3 py-2 text-xs font-semibold text-info">
+                                                <i class="ri-file-pdf-2-line text-base" aria-hidden="true"></i>
+                                                <span class="truncate">{{ attachment.originalFilename }}</span>
+                                            </a>
+                                        {% endif %}
                                     {% endfor %}
                                 </div>
                             {% endif %}
@@ -526,6 +541,18 @@
                             </div>
                         </form>
                     </div>
+                </div>
+            </div>
+
+            <div class="vehicle-receipt-modal-backdrop" data-receipt-modal>
+                <div class="vehicle-receipt-modal" role="dialog" aria-modal="true" aria-labelledby="vehicle-receipt-modal-title">
+                    <div class="flex items-center justify-between gap-4 border-b border-black/10 px-4 py-3">
+                        <h3 id="vehicle-receipt-modal-title" class="truncate text-sm font-semibold text-black" data-receipt-modal-title>Račun servisa</h3>
+                        <button type="button" class="inline-flex size-9 shrink-0 items-center justify-center rounded text-muted hover:bg-black/5" data-receipt-close aria-label="Zatvori">
+                            <i class="ri-close-line text-xl" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <img src="" alt="Pregled računa servisa" class="vehicle-receipt-modal-image" data-receipt-modal-image>
                 </div>
             </div>
         </section>
@@ -697,6 +724,37 @@
                     : (count === 1 ? 'Odabran 1 račun' : `Odabrano računa: ${count}`);
             });
             renderItems();
+        })();
+
+        (() => {
+            const modal = document.querySelector('[data-receipt-modal]');
+            const image = document.querySelector('[data-receipt-modal-image]');
+            const title = document.querySelector('[data-receipt-modal-title]');
+
+            if (!modal || !image || !title) return;
+
+            const close = () => {
+                modal.classList.remove('is-open');
+                image.removeAttribute('src');
+                document.body.style.overflow = '';
+            };
+
+            document.querySelectorAll('[data-receipt-preview]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    image.src = button.dataset.receiptUrl || '';
+                    title.textContent = button.dataset.receiptTitle || 'Račun servisa';
+                    modal.classList.add('is-open');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            document.querySelectorAll('[data-receipt-close]').forEach((button) => button.addEventListener('click', close));
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) close();
+            });
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && modal.classList.contains('is-open')) close();
+            });
         })();
     </script>
 {% endblock %}
