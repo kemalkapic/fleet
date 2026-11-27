@@ -31,6 +31,9 @@ class VehicleTire
     #[ORM\Column(length: 80, nullable: true)]
     private ?string $position = null;
 
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $mountedAt = null;
+
     #[ORM\Column]
     private bool $onVehicle = false;
 
@@ -117,6 +120,19 @@ class VehicleTire
     {
         $position = $position !== null ? trim($position) : null;
         $this->position = $position !== '' ? $position : null;
+        $this->touch();
+
+        return $this;
+    }
+
+    public function getMountedAt(): ?\DateTimeImmutable
+    {
+        return $this->mountedAt;
+    }
+
+    public function setMountedAt(?\DateTimeImmutable $mountedAt): self
+    {
+        $this->mountedAt = $mountedAt;
         $this->touch();
 
         return $this;

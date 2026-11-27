@@ -206,9 +206,10 @@ class VehicleController extends AbstractController
             $name = trim((string) ($row['name'] ?? ''));
             $dot = trim((string) ($row['dot'] ?? ''));
             $position = trim((string) ($row['position'] ?? ''));
+            $mountedAtValue = trim((string) ($row['mountedAt'] ?? ''));
             $onVehicle = isset($row['onVehicle']);
 
-            if ($name === '' && $dot === '' && $position === '') {
+            if ($name === '' && $dot === '' && $position === '' && $mountedAtValue === '' && !$onVehicle) {
                 continue;
             }
 
@@ -218,12 +219,25 @@ class VehicleController extends AbstractController
                 return $this->redirectToRoute('vehicle_edit', ['id' => $vehicle->getId(), '_fragment' => 'vehicle-tires']);
             }
 
+            $mountedAt = null;
+            if ($mountedAtValue !== '') {
+                $mountedAt = \DateTimeImmutable::createFromFormat('!Y-m-d', $mountedAtValue);
+                $dateErrors = \DateTimeImmutable::getLastErrors();
+
+                if (!$mountedAt instanceof \DateTimeImmutable || (is_array($dateErrors) && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))) {
+                    $this->addFlash('error', 'Datum montaže gume nije ispravan.');
+
+                    return $this->redirectToRoute('vehicle_edit', ['id' => $vehicle->getId(), '_fragment' => 'vehicle-tires']);
+                }
+            }
+
             $tire = (new VehicleTire())
                 ->setCompany($company)
                 ->setVehicle($vehicle)
                 ->setName($name)
                 ->setDot($dot)
                 ->setPosition($position)
+                ->setMountedAt($mountedAt)
                 ->setOnVehicle($onVehicle)
                 ->setSortOrder($sortOrder++);
 

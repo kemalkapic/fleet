@@ -51,7 +51,7 @@
         .dark .vehicle-service-work-item { background: rgba(255, 255, 255, 0.04); color: #e2e8f0; }
         @media (min-width: 768px) { .vehicle-edit-tabs { display: flex; overflow-x: auto; padding-bottom: 0.25rem; } .vehicle-edit-tab { justify-content: flex-start; white-space: nowrap; padding: 0.55rem 0.8rem; font-size: 0.875rem; } .vehicle-edit-tab svg { width: 1.25rem; height: 1.25rem; } }
         @media (min-width: 640px) { .vehicle-service-actions { top: 1rem; right: 1rem; } }
-        @media (min-width: 768px) { .vehicle-tire-grid { grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr) minmax(0, 0.9fr) minmax(0, 0.7fr) auto; align-items: end; } }
+        @media (min-width: 768px) { .vehicle-tire-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.55fr) minmax(0, 0.8fr) minmax(0, 0.85fr) minmax(0, 0.6fr) auto; align-items: end; } }
         @media (max-width: 900px) { .vehicle-fuel-row { grid-template-columns: 1fr; align-items: start; } }
     </style>
 
@@ -199,6 +199,7 @@
                                 <div><label class="block mb-1 text-xs font-medium text-black dark:text-white">Naziv gume</label><input type="text" name="tires[{{ loop.index0 }}][name]" value="{{ tire.name }}" data-name="name" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"></div>
                                 <div><label class="block mb-1 text-xs font-medium text-black dark:text-white">DOT</label><input type="text" name="tires[{{ loop.index0 }}][dot]" value="{{ tire.dot }}" data-name="dot" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"></div>
                                 <div><label class="block mb-1 text-xs font-medium text-black dark:text-white">Pozicija</label><input type="text" name="tires[{{ loop.index0 }}][position]" value="{{ tire.position }}" data-name="position" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"></div>
+                                <div><label class="block mb-1 text-xs font-medium text-black dark:text-white">Datum montaže</label><input type="date" name="tires[{{ loop.index0 }}][mountedAt]" value="{{ tire.mountedAt ? tire.mountedAt|date('Y-m-d') : '' }}" data-name="mountedAt" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"></div>
                                 <div>
                                     <label class="block mb-1 text-xs font-medium text-black dark:text-white">Na vozilu</label>
                                     <label class="inline-flex h-10 items-center gap-2 text-sm font-medium text-black dark:text-white">
@@ -217,6 +218,7 @@
                                 <div><label class="block mb-1 text-xs font-medium text-black dark:text-white">Naziv gume</label><input type="text" name="tires[0][name]" data-name="name" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"></div>
                                 <div><label class="block mb-1 text-xs font-medium text-black dark:text-white">DOT</label><input type="text" name="tires[0][dot]" data-name="dot" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"></div>
                                 <div><label class="block mb-1 text-xs font-medium text-black dark:text-white">Pozicija</label><input type="text" name="tires[0][position]" data-name="position" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"></div>
+                                <div><label class="block mb-1 text-xs font-medium text-black dark:text-white">Datum montaže</label><input type="date" name="tires[0][mountedAt]" data-name="mountedAt" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"></div>
                                 <div>
                                     <label class="block mb-1 text-xs font-medium text-black dark:text-white">Na vozilu</label>
                                     <label class="inline-flex h-10 items-center gap-2 text-sm font-medium text-black dark:text-white">
@@ -255,6 +257,7 @@
                         <div><label class="block mb-1 text-xs font-medium text-black dark:text-white">Naziv gume</label><input type="text" data-name="name" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"></div>
                         <div><label class="block mb-1 text-xs font-medium text-black dark:text-white">DOT</label><input type="text" data-name="dot" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"></div>
                         <div><label class="block mb-1 text-xs font-medium text-black dark:text-white">Pozicija</label><input type="text" data-name="position" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"></div>
+                        <div><label class="block mb-1 text-xs font-medium text-black dark:text-white">Datum montaže</label><input type="date" data-name="mountedAt" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10 dark:border-darkborder"></div>
                         <div>
                             <label class="block mb-1 text-xs font-medium text-black dark:text-white">Na vozilu</label>
                             <label class="inline-flex h-10 items-center gap-2 text-sm font-medium text-black dark:text-white">
