@@ -42,4 +42,26 @@ class VehicleFuelEntryRepository extends ServiceEntityRepository
             'company' => $company,
         ]);
     }
+
+    /** @return list<array{vehicleId: int, total: string}> */
+    public function findCostTotalsByVehicle(
+        Company $company,
+        \DateTimeImmutable $from,
+        \DateTimeImmutable $until,
+    ): array {
+        return $this->createQueryBuilder('fuel')
+            ->select('vehicle.id AS vehicleId')
+            ->addSelect('SUM(fuel.amountBam) AS total')
+            ->innerJoin('fuel.vehicle', 'vehicle')
+            ->andWhere('fuel.company = :company')
+            ->andWhere('fuel.entryDate >= :from')
+            ->andWhere('fuel.entryDate < :until')
+            ->andWhere('vehicle.deletedAt IS NULL')
+            ->setParameter('company', $company)
+            ->setParameter('from', $from)
+            ->setParameter('until', $until)
+            ->groupBy('vehicle.id')
+            ->getQuery()
+            ->getArrayResult();
+    }
 }

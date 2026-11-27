@@ -93,6 +93,23 @@
             background: rgba(124, 58, 237, 0.1);
         }
 
+        .dashboard-section-icon-costs {
+            color: #047857;
+            background: rgba(4, 120, 87, 0.1);
+        }
+
+        .dashboard-cost-summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.75rem;
+        }
+
+        .dashboard-cost-chart-scroll {
+            max-height: 430px;
+            overflow-y: auto;
+            scrollbar-gutter: stable;
+        }
+
         .dashboard-section-title {
             margin: 0;
             color: #111827;
@@ -165,6 +182,10 @@
         }
 
         @media (max-width: 760px) {
+            .dashboard-cost-summary {
+                grid-template-columns: 1fr;
+            }
+
             .dashboard-upcoming-row,
             .dashboard-expired-row {
                 grid-template-columns: 1fr;
@@ -284,6 +305,46 @@
         </section>
         {% endif %}
     </div>
+
+    <section class="mt-4 p-4 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10 sm:p-5">
+        <div class="dashboard-section-header">
+            <span class="dashboard-section-icon dashboard-section-icon-costs" aria-hidden="true">
+                <i class="ri-money-dollar-circle-line"></i>
+            </span>
+            <div class="min-w-0">
+                <h2 class="dashboard-section-title">Troškovi vozila</h2>
+                <p class="dashboard-section-description">Evidentirani troškovi goriva i servisa u {{ cost_year }}. godini.</p>
+            </div>
+        </div>
+
+        <div class="dashboard-cost-summary">
+            <div class="rounded border border-black/10 bg-black/[0.02] p-3 dark:border-darkborder dark:bg-white/[0.03]">
+                <p class="text-xs font-semibold uppercase text-muted">Ukupni trošak</p>
+                <p class="mt-1 text-xl font-bold text-black dark:text-white">{{ cost_summary.total|number_format(2, ',', '.') }} KM</p>
+            </div>
+            <div class="rounded border border-black/10 bg-black/[0.02] p-3 dark:border-darkborder dark:bg-white/[0.03]">
+                <p class="text-xs font-semibold uppercase text-muted">Gorivo</p>
+                <p class="mt-1 text-xl font-bold text-info">{{ cost_summary.fuel|number_format(2, ',', '.') }} KM</p>
+            </div>
+            <div class="rounded border border-black/10 bg-black/[0.02] p-3 dark:border-darkborder dark:bg-white/[0.03]">
+                <p class="text-xs font-semibold uppercase text-muted">Servisi</p>
+                <p class="mt-1 text-xl font-bold text-success">{{ cost_summary.services|number_format(2, ',', '.') }} KM</p>
+            </div>
+        </div>
+
+        {% if cost_summary.total > 0 %}
+            <div class="dashboard-cost-chart-scroll mt-4">
+                <div
+                    id="vehicle-cost-chart"
+                    data-costs="{{ vehicle_costs|json_encode|e('html_attr') }}"
+                ></div>
+            </div>
+        {% else %}
+            <div class="mt-4 rounded border border-dashed border-black/10 p-6 text-center text-sm text-muted dark:border-darkborder">
+                Još nema evidentiranih troškova goriva ili servisa za ovu godinu.
+            </div>
+        {% endif %}
+    </section>
 
     <section class="mt-4 p-4 bg-white border rounded dark:bg-darklight dark:border-darkborder border-black/10 sm:p-5">
         <div class="dashboard-section-header">
@@ -470,6 +531,89 @@
                     options: {
                         chart: { height: 270 },
                         plotOptions: { bar: { columnWidth: '58%' } },
+                    },
+                }],
+            });
+
+            chart.render();
+        })();
+
+        (() => {
+            const chartElement = document.querySelector('#vehicle-cost-chart');
+
+            if (!chartElement || typeof ApexCharts === 'undefined') {
+                return;
+            }
+
+            const costs = JSON.parse(chartElement.dataset.costs || '[]');
+            const formatMoney = (value) => `${Number(value).toLocaleString('bs-BA', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            })} KM`;
+
+            const chart = new ApexCharts(chartElement, {
+                chart: {
+                    type: 'bar',
+                    height: Math.max(250, costs.length * 54),
+                    stacked: true,
+                    fontFamily: 'inherit',
+                    toolbar: { show: false },
+                },
+                series: [
+                    { name: 'Gorivo', data: costs.map((item) => item.fuel) },
+                    { name: 'Servisi', data: costs.map((item) => item.services) },
+                ],
+                colors: ['#3b82f6', '#10b981'],
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        borderRadius: 4,
+                        barHeight: '58%',
+                    },
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: (value) => Number(value) > 0
+                        ? `${Number(value).toLocaleString('bs-BA', { maximumFractionDigits: 0 })} KM`
+                        : '',
+                    style: {
+                        colors: ['#ffffff'],
+                        fontSize: '11px',
+                        fontWeight: 700,
+                    },
+                    dropShadow: { enabled: false },
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'right',
+                },
+                grid: {
+                    borderColor: '#e5e7eb',
+                    strokeDashArray: 4,
+                },
+                xaxis: {
+                    categories: costs.map((item) => item.registration),
+                    labels: {
+                        show: false,
+                    },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                },
+                yaxis: {
+                    labels: {
+                        maxWidth: 130,
+                        style: { colors: '#374151', fontSize: '12px', fontWeight: 600 },
+                    },
+                },
+                tooltip: {
+                    y: { formatter: (value) => formatMoney(value) },
+                },
+                responsive: [{
+                    breakpoint: 640,
+                    options: {
+                        chart: { height: Math.max(240, costs.length * 48) },
+                        legend: { horizontalAlign: 'left' },
+                        yaxis: { labels: { maxWidth: 90 } },
                     },
                 }],
             });

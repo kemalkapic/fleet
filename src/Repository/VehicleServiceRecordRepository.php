@@ -46,4 +46,27 @@ class VehicleServiceRecordRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /** @return list<array{vehicleId: int, total: string}> */
+    public function findCostTotalsByVehicle(
+        Company $company,
+        \DateTimeImmutable $from,
+        \DateTimeImmutable $until,
+    ): array {
+        return $this->createQueryBuilder('service')
+            ->select('vehicle.id AS vehicleId')
+            ->addSelect('SUM(service.costBam) AS total')
+            ->innerJoin('service.vehicle', 'vehicle')
+            ->andWhere('service.company = :company')
+            ->andWhere('service.serviceDate >= :from')
+            ->andWhere('service.serviceDate < :until')
+            ->andWhere('service.costBam IS NOT NULL')
+            ->andWhere('vehicle.deletedAt IS NULL')
+            ->setParameter('company', $company)
+            ->setParameter('from', $from)
+            ->setParameter('until', $until)
+            ->groupBy('vehicle.id')
+            ->getQuery()
+            ->getArrayResult();
+    }
 }

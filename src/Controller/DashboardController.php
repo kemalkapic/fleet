@@ -9,7 +9,9 @@ use App\Repository\FleetDocumentRepository;
 use App\Repository\NotificationRepository;
 use App\Repository\UserRepository;
 use App\Repository\UserActivityRepository;
+use App\Repository\VehicleFuelEntryRepository;
 use App\Repository\VehicleRepository;
+use App\Repository\VehicleServiceRecordRepository;
 use App\Service\Tenant\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,6 +29,8 @@ class DashboardController extends AbstractController
         NotificationRepository $notifications,
         UserRepository $users,
         UserActivityRepository $userActivities,
+        VehicleFuelEntryRepository $fuelEntries,
+        VehicleServiceRecordRepository $serviceRecords,
         string $termsVersion,
     ): Response
     {
@@ -177,11 +181,62 @@ class DashboardController extends AbstractController
         $upcomingDocuments = [];
         $expiredDocuments = [];
         $latestNotifications = [];
+        $costYear = (int) $today->format('Y');
+        $costSummary = ['total' => 0.0, 'fuel' => 0.0, 'services' => 0.0];
+        $vehicleCosts = [];
 
         if ($company !== null) {
             $upcomingDocuments = $documents->findUpcomingForCompany($company, $today, 10);
             $expiredDocuments = $documents->findExpiredForCompany($company, $today, 10);
             $latestNotifications = $notifications->findLatestForCompanyLimited($company, 3);
+
+            $costFrom = $today->setDate($costYear, 1, 1);
+            $costUntil = $costFrom->modify('+1 year');
+            $costsByVehicle = [];
+
+            foreach ($vehicles->findForCompany($company) as $vehicle) {
+                $vehicleId = $vehicle->getId();
+                if ($vehicleId === null) {
+                    continue;
+                }
+
+                $description = trim(sprintf('%s %s', $vehicle->getManufacturer() ?? '', $vehicle->getModel() ?? ''));
+                $costsByVehicle[$vehicleId] = [
+                    'vehicleId' => $vehicleId,
+                    'registration' => $vehicle->getRegistrationNumber(),
+                    'description' => $description,
+                    'fuel' => 0.0,
+                    'services' => 0.0,
+                    'total' => 0.0,
+                ];
+            }
+
+            foreach ($fuelEntries->findCostTotalsByVehicle($company, $costFrom, $costUntil) as $row) {
+                $vehicleId = (int) $row['vehicleId'];
+                if (isset($costsByVehicle[$vehicleId])) {
+                    $costsByVehicle[$vehicleId]['fuel'] = (float) $row['total'];
+                }
+            }
+
+            foreach ($serviceRecords->findCostTotalsByVehicle($company, $costFrom, $costUntil) as $row) {
+                $vehicleId = (int) $row['vehicleId'];
+                if (isset($costsByVehicle[$vehicleId])) {
+                    $costsByVehicle[$vehicleId]['services'] = (float) $row['total'];
+                }
+            }
+
+            foreach ($costsByVehicle as $vehicleCost) {
+                $vehicleCost['total'] = $vehicleCost['fuel'] + $vehicleCost['services'];
+                $costSummary['fuel'] += $vehicleCost['fuel'];
+                $costSummary['services'] += $vehicleCost['services'];
+
+                if ($vehicleCost['total'] > 0) {
+                    $vehicleCosts[] = $vehicleCost;
+                }
+            }
+
+            $costSummary['total'] = $costSummary['fuel'] + $costSummary['services'];
+            usort($vehicleCosts, static fn (array $left, array $right): int => $right['total'] <=> $left['total']);
 
             foreach ($documents->findExpiringBetweenForCompany($company, $today, $chartEnd) as $document) {
                 $monthIndex = $expiryChartIndexes[$document->getValidUntil()->format('Y-m')] ?? null;
@@ -205,6 +260,9 @@ class DashboardController extends AbstractController
             'expiry_chart_labels' => $expiryChartLabels,
             'expiry_chart_values' => $expiryChartValues,
             'expiry_chart_details' => $expiryChartDetails,
+            'cost_year' => $costYear,
+            'cost_summary' => $costSummary,
+            'vehicle_costs' => $vehicleCosts,
         ]);
     }
 }
