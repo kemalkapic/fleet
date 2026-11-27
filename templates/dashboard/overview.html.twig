@@ -100,7 +100,7 @@
 
         .dashboard-cost-summary {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 0.75rem;
         }
 
@@ -183,7 +183,7 @@
 
         @media (max-width: 760px) {
             .dashboard-cost-summary {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
             .dashboard-upcoming-row,
@@ -313,7 +313,7 @@
             </span>
             <div class="min-w-0">
                 <h2 class="dashboard-section-title">Troškovi vozila</h2>
-                <p class="dashboard-section-description">Evidentirani troškovi goriva i servisa u {{ cost_year }}. godini.</p>
+                <p class="dashboard-section-description">Evidentirani troškovi goriva, servisa i ostalih stavki u {{ cost_year }}. godini.</p>
             </div>
         </div>
 
@@ -329,6 +329,10 @@
             <div class="rounded border border-black/10 bg-black/[0.02] p-3 dark:border-darkborder dark:bg-white/[0.03]">
                 <p class="text-xs font-semibold uppercase text-muted">Servisi</p>
                 <p class="mt-1 text-xl font-bold text-success">{{ cost_summary.services|number_format(2, ',', '.') }} KM</p>
+            </div>
+            <div class="rounded border border-black/10 bg-black/[0.02] p-3 dark:border-darkborder dark:bg-white/[0.03]">
+                <p class="text-xs font-semibold uppercase text-muted">Ostali troškovi</p>
+                <p class="mt-1 text-xl font-bold text-warning">{{ cost_summary.expenses|number_format(2, ',', '.') }} KM</p>
             </div>
         </div>
 
@@ -562,8 +566,9 @@
                 series: [
                     { name: 'Gorivo', data: costs.map((item) => item.fuel) },
                     { name: 'Servisi', data: costs.map((item) => item.services) },
+                    { name: 'Ostali troškovi', data: costs.map((item) => item.expenses) },
                 ],
-                colors: ['#3b82f6', '#10b981'],
+                colors: ['#3b82f6', '#10b981', '#f59e0b'],
                 plotOptions: {
                     bar: {
                         horizontal: true,

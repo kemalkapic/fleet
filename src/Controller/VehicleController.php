@@ -8,9 +8,11 @@ use App\Entity\Vehicle;
 use App\Entity\VehicleFuelEntry;
 use App\Entity\VehicleTire;
 use App\Enum\Module;
+use App\Enum\VehicleExpenseType;
 use App\Form\VehicleType;
 use App\Repository\FleetDocumentRepository;
 use App\Repository\VehicleFuelEntryRepository;
+use App\Repository\VehicleExpenseRepository;
 use App\Repository\VehicleRepository;
 use App\Repository\VehicleServiceRecordRepository;
 use App\Repository\VehicleTireRepository;
@@ -116,6 +118,7 @@ class VehicleController extends AbstractController
         FleetDocumentRepository $documents,
         VehicleTireRepository $tires,
         VehicleFuelEntryRepository $fuelEntries,
+        VehicleExpenseRepository $expenses,
         VehicleServiceRecordRepository $serviceRecords,
         VehicleServiceCatalog $serviceCatalog,
         EntityManagerInterface $entityManager,
@@ -142,6 +145,8 @@ class VehicleController extends AbstractController
                     'documents' => $documents->findForVehicle($vehicle, $company),
                     'tires' => $tires->findForVehicle($vehicle, $company),
                     'fuel_entries' => $this->buildFuelEntryRows($fuelEntries->findForVehicle($vehicle, $company)),
+                    'expenses' => $expenses->findForVehicle($vehicle, $company),
+                    'expense_types' => VehicleExpenseType::labels(),
                     'service_records' => $serviceRecords->findForVehicle($vehicle, $company),
                     'service_types' => $serviceCatalog->types(),
                     'service_item_catalog' => $this->buildServiceItemCatalog($serviceCatalog),
@@ -161,6 +166,8 @@ class VehicleController extends AbstractController
             'documents' => $documents->findForVehicle($vehicle, $company),
             'tires' => $tires->findForVehicle($vehicle, $company),
             'fuel_entries' => $this->buildFuelEntryRows($fuelEntries->findForVehicle($vehicle, $company)),
+            'expenses' => $expenses->findForVehicle($vehicle, $company),
+            'expense_types' => VehicleExpenseType::labels(),
             'service_records' => $serviceRecords->findForVehicle($vehicle, $company),
             'service_types' => $serviceCatalog->types(),
             'service_item_catalog' => $this->buildServiceItemCatalog($serviceCatalog),

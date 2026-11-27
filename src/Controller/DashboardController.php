@@ -10,6 +10,7 @@ use App\Repository\NotificationRepository;
 use App\Repository\UserRepository;
 use App\Repository\UserActivityRepository;
 use App\Repository\VehicleFuelEntryRepository;
+use App\Repository\VehicleExpenseRepository;
 use App\Repository\VehicleRepository;
 use App\Repository\VehicleServiceRecordRepository;
 use App\Service\Tenant\TenantContext;
@@ -30,6 +31,7 @@ class DashboardController extends AbstractController
         UserRepository $users,
         UserActivityRepository $userActivities,
         VehicleFuelEntryRepository $fuelEntries,
+        VehicleExpenseRepository $vehicleExpenses,
         VehicleServiceRecordRepository $serviceRecords,
         string $termsVersion,
     ): Response
@@ -182,7 +184,7 @@ class DashboardController extends AbstractController
         $expiredDocuments = [];
         $latestNotifications = [];
         $costYear = (int) $today->format('Y');
-        $costSummary = ['total' => 0.0, 'fuel' => 0.0, 'services' => 0.0];
+        $costSummary = ['total' => 0.0, 'fuel' => 0.0, 'services' => 0.0, 'expenses' => 0.0];
         $vehicleCosts = [];
 
         if ($company !== null) {
@@ -207,6 +209,7 @@ class DashboardController extends AbstractController
                     'description' => $description,
                     'fuel' => 0.0,
                     'services' => 0.0,
+                    'expenses' => 0.0,
                     'total' => 0.0,
                 ];
             }
@@ -225,17 +228,25 @@ class DashboardController extends AbstractController
                 }
             }
 
+            foreach ($vehicleExpenses->findCostTotalsByVehicle($company, $costFrom, $costUntil) as $row) {
+                $vehicleId = (int) $row['vehicleId'];
+                if (isset($costsByVehicle[$vehicleId])) {
+                    $costsByVehicle[$vehicleId]['expenses'] = (float) $row['total'];
+                }
+            }
+
             foreach ($costsByVehicle as $vehicleCost) {
-                $vehicleCost['total'] = $vehicleCost['fuel'] + $vehicleCost['services'];
+                $vehicleCost['total'] = $vehicleCost['fuel'] + $vehicleCost['services'] + $vehicleCost['expenses'];
                 $costSummary['fuel'] += $vehicleCost['fuel'];
                 $costSummary['services'] += $vehicleCost['services'];
+                $costSummary['expenses'] += $vehicleCost['expenses'];
 
                 if ($vehicleCost['total'] > 0) {
                     $vehicleCosts[] = $vehicleCost;
                 }
             }
 
-            $costSummary['total'] = $costSummary['fuel'] + $costSummary['services'];
+            $costSummary['total'] = $costSummary['fuel'] + $costSummary['services'] + $costSummary['expenses'];
             usort($vehicleCosts, static fn (array $left, array $right): int => $right['total'] <=> $left['total']);
 
             foreach ($documents->findExpiringBetweenForCompany($company, $today, $chartEnd) as $document) {

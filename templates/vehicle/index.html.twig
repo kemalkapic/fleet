@@ -21,7 +21,7 @@
         .vehicle-card-tabs {
             display: grid;
             gap: 0.35rem;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(5, minmax(0, 1fr));
             padding-top: 0.75rem;
         }
 
@@ -237,6 +237,10 @@
                         <a href="{{ path('vehicle_edit', {id: vehicle.id}) }}#vehicle-fuel" class="vehicle-card-tab" title="Gorivo">
                             <i class="ri-gas-station-line" aria-hidden="true"></i>
                             <span>Gorivo</span>
+                        </a>
+                        <a href="{{ path('vehicle_edit', {id: vehicle.id}) }}#vehicle-expenses" class="vehicle-card-tab" title="Troškovi">
+                            <i class="ri-wallet-3-line" aria-hidden="true"></i>
+                            <span>Troškovi</span>
                         </a>
                         <a href="{{ path('vehicle_edit', {id: vehicle.id}) }}#vehicle-tires" class="vehicle-card-tab" title="Gume">
                             <i class="ri-steering-2-line" aria-hidden="true"></i>

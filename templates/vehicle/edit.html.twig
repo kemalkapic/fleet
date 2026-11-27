@@ -16,6 +16,10 @@
         .vehicle-fuel-modal-backdrop { position: fixed; inset: 0; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.55); }
         .vehicle-fuel-modal-backdrop.is-open { display: flex; }
         .vehicle-fuel-modal { width: min(100%, 520px); border-radius: 8px; background: #fff; border: 1px solid rgba(0, 0, 0, 0.1); padding: 1rem; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22); }
+        .vehicle-expense-row { display: grid; gap: 0.75rem; grid-template-columns: 110px minmax(150px, 1fr) 130px minmax(180px, 1.5fr) auto; align-items: center; }
+        .vehicle-expense-modal-backdrop { position: fixed; inset: 0; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.55); }
+        .vehicle-expense-modal-backdrop.is-open { display: flex; }
+        .vehicle-expense-modal { width: min(100%, 560px); border-radius: 8px; background: #fff; border: 1px solid rgba(0, 0, 0, 0.1); padding: 1rem; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22); }
         .vehicle-service-modal-backdrop { position: fixed; inset: 0; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 1rem; background: rgba(15, 23, 42, 0.58); }
         .vehicle-service-modal-backdrop.is-open { display: flex; }
         .vehicle-service-modal { width: min(100%, 760px); max-height: 92vh; overflow-y: auto; border-radius: 8px; background: #fff; border: 1px solid rgba(0, 0, 0, 0.1); padding: 1rem; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24); }
@@ -52,7 +56,7 @@
         @media (min-width: 768px) { .vehicle-edit-tabs { display: flex; overflow-x: auto; padding-bottom: 0.25rem; } .vehicle-edit-tab { justify-content: flex-start; white-space: nowrap; padding: 0.55rem 0.8rem; font-size: 0.875rem; } .vehicle-edit-tab svg { width: 1.25rem; height: 1.25rem; } }
         @media (min-width: 640px) { .vehicle-service-actions { top: 1rem; right: 1rem; } }
         @media (min-width: 768px) { .vehicle-tire-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.55fr) minmax(0, 0.8fr) minmax(0, 0.85fr) minmax(0, 0.6fr) auto; align-items: end; } }
-        @media (max-width: 900px) { .vehicle-fuel-row { grid-template-columns: 1fr; align-items: start; } }
+        @media (max-width: 900px) { .vehicle-fuel-row, .vehicle-expense-row { grid-template-columns: 1fr; align-items: start; } }
     </style>
 
     <div class="w-full">
@@ -108,6 +112,10 @@
                         <path d="M9 7h3M15 8h2l2 2v7a2 2 0 0 0 4 0v-5l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     Gorivo
+                </button>
+                <button type="button" class="vehicle-edit-tab" data-tab-target="vehicle-expenses" role="tab">
+                    <i class="ri-wallet-3-line text-xl" aria-hidden="true"></i>
+                    Troškovi
                 </button>
                 {% endif %}
                 <button type="button" class="vehicle-edit-tab" data-tab-target="vehicle-services" role="tab">
@@ -377,6 +385,100 @@
                                         <path d="M5 4h12l2 2v14H5V4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
                                         <path d="M8 4v6h8M8 20v-6h8v6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
                                     </svg>
+                                    Spremi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="vehicle-expenses" class="vehicle-edit-panel">
+                <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <h3 class="text-base font-semibold text-black dark:text-white">Troškovi</h3>
+                        <p class="mt-1 text-sm text-muted">Registracija, periodični tehnički, rate za lizing i ostali troškovi vozila.</p>
+                    </div>
+                    <button type="button" class="inline-flex items-center justify-center gap-2 rounded bg-purple px-3 py-2 text-sm font-semibold text-white" data-expense-open>
+                        <i class="ri-add-line text-xl" aria-hidden="true"></i>
+                        Dodaj trošak
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    {% for expense in expenses %}
+                        <article class="vehicle-expense-row rounded border border-black/10 p-3 dark:border-darkborder">
+                            <div>
+                                <p class="text-[11px] font-semibold uppercase text-muted">Datum</p>
+                                <p class="mt-1 font-semibold text-black dark:text-white">{{ expense.expenseDate|date('d.m.Y') }}</p>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-semibold uppercase text-muted">Vrsta</p>
+                                <p class="mt-1 text-black dark:text-white">{{ expense.typeLabel }}</p>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-semibold uppercase text-muted">Iznos</p>
+                                <p class="mt-1 font-semibold text-success">{{ expense.amountBam|number_format(2, ',', '.') }} KM</p>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-semibold uppercase text-muted">Napomena</p>
+                                <p class="mt-1 text-sm text-black dark:text-white">{{ expense.notes ?: '-' }}</p>
+                            </div>
+                            <form method="post" action="{{ path('vehicle_expense_delete', {vehicleId: vehicle.id, expenseId: expense.id}) }}" onsubmit="return confirm('Jeste li sigurni da želite obrisati ovaj trošak?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_vehicle_expense_' ~ expense.id) }}">
+                                <button type="submit" class="inline-flex h-10 items-center justify-center rounded bg-danger/10 px-3 text-danger" aria-label="Obriši trošak">
+                                    <i class="ri-delete-bin-line text-lg" aria-hidden="true"></i>
+                                </button>
+                            </form>
+                        </article>
+                    {% else %}
+                        <div class="rounded border border-dashed border-black/10 p-6 text-center text-sm text-muted dark:border-darkborder">
+                            Još nema evidentiranih troškova za ovo vozilo.
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="vehicle-expense-modal-backdrop" data-expense-modal>
+                    <div class="vehicle-expense-modal">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h3 class="text-base font-semibold text-black">Dodaj trošak</h3>
+                                <p class="mt-1 text-sm text-muted">Unesite vrstu, datum i iznos troška vozila.</p>
+                            </div>
+                            <button type="button" class="rounded px-2 py-1 text-xl leading-none text-muted" data-expense-close>&times;</button>
+                        </div>
+
+                        <form method="post" action="{{ path('vehicle_expense_add', {id: vehicle.id}) }}" class="mt-4 space-y-4" data-expense-form>
+                            <input type="hidden" name="_token" value="{{ csrf_token('add_vehicle_expense_' ~ vehicle.id) }}">
+
+                            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label for="expense-date" class="block mb-1 text-xs font-medium text-black">Datum</label>
+                                    <input id="expense-date" type="date" name="expenseDate" value="{{ 'now'|date('Y-m-d') }}" required class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10">
+                                </div>
+                                <div>
+                                    <label for="expense-type" class="block mb-1 text-xs font-medium text-black">Vrsta troška</label>
+                                    <select id="expense-type" name="type" required class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10">
+                                        {% for value, label in expense_types %}
+                                            <option value="{{ value }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label for="expense-amount" class="block mb-1 text-xs font-medium text-black">Iznos (KM)</label>
+                                    <input id="expense-amount" type="number" min="0.01" step="0.01" name="amountBam" required class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="expense-notes" class="block mb-1 text-xs font-medium text-black">Napomena</label>
+                                <textarea id="expense-notes" name="notes" rows="3" class="w-full px-3 py-2 text-sm bg-transparent border rounded outline-none border-black/10"></textarea>
+                            </div>
+
+                            <div class="flex gap-2">
+                                <button type="button" class="inline-flex flex-1 items-center justify-center rounded bg-black/5 px-4 py-2 text-sm font-semibold text-black" data-expense-close>Odustani</button>
+                                <button type="submit" class="inline-flex flex-1 items-center justify-center gap-2 rounded bg-purple px-4 py-2 text-sm font-semibold text-white">
+                                    <i class="ri-save-line text-lg" aria-hidden="true"></i>
                                     Spremi
                                 </button>
                             </div>
@@ -756,6 +858,29 @@
             openButton.addEventListener('click', open);
             document.querySelectorAll('[data-fuel-close]').forEach((button) => button.addEventListener('click', close));
             form.querySelectorAll('input').forEach((input) => input.addEventListener('input', updatePreview));
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) close();
+            });
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') close();
+            });
+        })();
+
+        (() => {
+            const modal = document.querySelector('[data-expense-modal]');
+            const openButton = document.querySelector('[data-expense-open]');
+            const form = document.querySelector('[data-expense-form]');
+
+            if (!modal || !openButton || !form) return;
+
+            const close = () => modal.classList.remove('is-open');
+            const open = () => {
+                modal.classList.add('is-open');
+                form.querySelector('[name="amountBam"]')?.focus();
+            };
+
+            openButton.addEventListener('click', open);
+            document.querySelectorAll('[data-expense-close]').forEach((button) => button.addEventListener('click', close));
             modal.addEventListener('click', (event) => {
                 if (event.target === modal) close();
             });
